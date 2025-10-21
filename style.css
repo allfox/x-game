@@ -11,7 +11,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: clamp(12px, 2vw, 24px);
+  padding: 4px;
   box-sizing: border-box;
 }
 
@@ -24,11 +24,11 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
-  gap: 16px;
+  gap: 8px;
   background: rgba(11, 16, 32, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 22px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 8px;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
 }
 
@@ -36,18 +36,18 @@ body {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: 6px;
   align-items: start;
 }
 
 .boss-wrapper {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1.1fr);
-  gap: 14px;
+  grid-template-columns: minmax(100px, 0.6fr) minmax(0, 1.4fr);
+  gap: 8px;
   background: linear-gradient(145deg, rgba(22, 34, 68, 0.9), rgba(10, 14, 32, 0.92));
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 8px;
   box-shadow: inset 0 0 30px rgba(12, 28, 72, 0.55);
   overflow: hidden;
 }
@@ -58,18 +58,18 @@ body {
   align-items: flex-end;
   justify-content: center;
   background: radial-gradient(circle at 50% 18%, rgba(120, 153, 255, 0.28), transparent 68%);
-  border-radius: 18px;
+  border-radius: 10px;
   overflow: hidden;
-  min-height: 200px;
-  padding: 12px 10px 0;
-  max-width: 240px;
+  min-height: 120px;
+  padding: 6px 4px 0;
+  max-width: 140px;
   margin: 0 auto;
 }
 
 .boss-portrait {
   position: relative;
   width: 100%;
-  max-width: 260px;
+  max-width: 150px;
   aspect-ratio: 3 / 4;
   display: flex;
   align-items: flex-end;
@@ -93,41 +93,35 @@ body {
 
 .enemy-panel {
   background: rgba(15, 24, 48, 0.82);
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   box-shadow: inset 0 0 22px rgba(10, 22, 58, 0.6);
 }
 
 .player-panel {
   background: rgba(15, 24, 48, 0.82);
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 8px;
   box-shadow: inset 0 0 22px rgba(10, 22, 58, 0.6);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.enemy-panel h1 {
-  margin: 0 0 4px;
-  font-size: 1.25rem;
+  gap: 6px;
 }
 
 .hp-bar {
   position: relative;
   width: 100%;
-  height: 14px;
+  height: 10px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 6px;
 }
 
 .hp-bar.player {
-  height: 18px;
+  height: 12px;
 }
 
 .hp-fill {
@@ -145,11 +139,12 @@ body {
 }
 
 .enemy-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 6px 12px;
-  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 0.65rem;
   color: #dce6ff;
+  margin-bottom: 2px;
 }
 
 .enemy-info-item {
@@ -164,10 +159,12 @@ body {
 
 .player-info {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 6px;
-  font-size: 0.85rem;
+  font-size: 0.65rem;
   color: #dce6ff;
+  margin-bottom: 2px;
 }
 
 .status-text {
@@ -178,10 +175,10 @@ body {
 
 .heroes {
   display: flex;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 4px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   scrollbar-width: thin;
 }
 
@@ -204,9 +201,10 @@ body {
 .control-button {
   border: none;
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 3px 8px;
   background: linear-gradient(90deg, #6aa8ff, #8f7bff);
   color: #051224;
+  font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease, filter 0.15s ease;
@@ -239,9 +237,9 @@ body {
 .hero-avatar {
   position: relative;
   flex: 0 0 auto;
-  width: 76px;
-  height: 96px;
-  border-radius: 18px;
+  width: 56px;
+  height: 70px;
+  border-radius: 12px;
   border: 1px solid rgba(116, 167, 255, 0.2);
   background: rgba(32, 48, 92, 0.86);
   display: flex;
@@ -277,9 +275,9 @@ body {
 
 .hero-avatar-portrait {
   position: relative;
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: var(--element-gradient, rgba(255, 255, 255, 0.1));
   box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
   display: flex;
@@ -305,10 +303,10 @@ body {
 
 .hero-avatar-cd {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
-  height: 8px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  height: 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
   overflow: hidden;
@@ -547,29 +545,21 @@ body {
 
 .board-section {
   background: rgba(17, 27, 52, 0.85);
-  border-radius: 18px;
-  padding: 12px;
+  border-radius: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   box-shadow: inset 0 0 35px rgba(14, 32, 72, 0.55);
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
 }
 
-.timer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-}
-
 .timer-bar {
-  flex: 1;
-  height: 10px;
+  width: 100%;
+  height: 6px;
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   overflow: hidden;
@@ -586,7 +576,7 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 4px;
+  gap: 3px;
   touch-action: none;
   width: 100%;
   max-width: 540px;
@@ -597,7 +587,7 @@ body {
   position: relative;
   width: 100%;
   padding-bottom: 100%;
-  border-radius: 14px;
+  border-radius: 10px;
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.45), 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.12s ease;
 }
@@ -1058,19 +1048,24 @@ body {
 @media (max-width: 960px) {
   .game {
     grid-template-columns: 1fr;
+    padding: 6px;
+    gap: 6px;
   }
 
   .battle-top {
     grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .boss-wrapper {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(80px, 0.5fr) minmax(0, 1.5fr);
+    padding: 6px;
+    gap: 6px;
   }
 
   .boss-visual {
-    min-height: 220px;
-    max-width: 220px;
+    min-height: 100px;
+    max-width: 110px;
   }
 
   .heroes {
@@ -1088,41 +1083,75 @@ body {
 
 @media (max-width: 640px) {
   body {
-    padding: 8px;
+    padding: 2px;
   }
 
   .game {
-    padding: 16px;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 8px;
   }
 
-  .board {
+  .battle-top {
+    gap: 3px;
+  }
+
+  .boss-wrapper {
+    padding: 4px;
     gap: 4px;
+    grid-template-columns: minmax(70px, 0.45fr) minmax(0, 1.55fr);
+  }
+
+  .boss-visual {
+    min-height: 90px;
+    max-width: 100px;
+    padding: 4px 2px 0;
   }
 
   .enemy-panel,
-  .player-panel,
-  .skills,
-  .battle-log,
-  .tips {
-    padding: 12px;
+  .player-panel {
+    padding: 6px;
+    gap: 3px;
+  }
+
+  .board-section {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .board {
+    gap: 2px;
   }
 
   .heroes {
-    gap: 8px;
+    gap: 5px;
   }
 
   .hero-avatar {
-    width: 74px;
-    height: 96px;
+    width: 50px;
+    height: 64px;
   }
 
   .hero-avatar-portrait {
-    width: 56px;
-    height: 56px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .hero-avatar-cd {
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    height: 5px;
+  }
+
+  .skills,
+  .battle-log,
+  .tips {
+    padding: 10px;
   }
 
   .hero-detail-panel {
-    padding: 14px;
+    padding: 12px;
   }
 
   .team-stage-content {
