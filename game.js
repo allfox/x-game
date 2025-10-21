@@ -54,6 +54,7 @@ const heroesContainer = document.getElementById("heroes");
 const heroDetailPanel = document.getElementById("hero-detail");
 const enemyHpBar = document.getElementById("enemy-hp");
 const enemyHpText = document.getElementById("enemy-hp-text");
+const enemyAttackText = document.getElementById("enemy-attack");
 const enemyCountdownText = document.getElementById("enemy-countdown");
 const enemyStatusText = document.getElementById("enemy-status");
 const enemyNameText = document.getElementById("enemy-name");
@@ -233,6 +234,9 @@ function updateEnemyPanel() {
   enemyHpText.textContent = `${formatNumber(enemyState.hp)} / ${formatNumber(
     enemyState.maxHp
   )}`;
+  if (enemyAttackText) {
+    enemyAttackText.textContent = formatNumber(enemyState.attack);
+  }
   enemyCountdownText.textContent = enemyState.countdown;
   enemyNameText.textContent = enemyState.name;
 
