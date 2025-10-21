@@ -4785,3 +4785,84 @@ export const HERO_ART = heroArtConfig.reduce((acc, entry) => {
   };
   return acc;
 }, {});
+
+export const BOSS_ART = {
+  'void-arbiter': `
+    <svg viewBox="0 0 260 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="void-bg" x1="130" y1="0" x2="130" y2="360">
+          <stop offset="0" stop-color="#0c1230" />
+          <stop offset="0.55" stop-color="#172047" />
+          <stop offset="1" stop-color="#060816" />
+        </linearGradient>
+        <radialGradient id="void-aura" cx="130" cy="110" r="150" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#8ee0ff" stop-opacity="0.68" />
+          <stop offset="0.55" stop-color="#5f6fe0" stop-opacity="0.32" />
+          <stop offset="1" stop-color="#060a1c" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="void-armor" x1="82" y1="100" x2="178" y2="284">
+          <stop offset="0" stop-color="#dde5ff" />
+          <stop offset="0.28" stop-color="#a4b7ff" />
+          <stop offset="0.62" stop-color="#5e74d8" />
+          <stop offset="1" stop-color="#1b2658" />
+        </linearGradient>
+        <linearGradient id="void-cloak" x1="46" y1="164" x2="214" y2="332">
+          <stop offset="0" stop-color="#40207b" />
+          <stop offset="0.52" stop-color="#1a1449" />
+          <stop offset="1" stop-color="#05071d" />
+        </linearGradient>
+        <linearGradient id="void-skin" x1="130" y1="50" x2="130" y2="214">
+          <stop offset="0" stop-color="#f3f7ff" />
+          <stop offset="1" stop-color="#97aad6" />
+        </linearGradient>
+        <linearGradient id="void-horn" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fdf7ff" />
+          <stop offset="1" stop-color="#8b7cff" />
+        </linearGradient>
+        <linearGradient id="void-energy" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#90f8ff" />
+          <stop offset="1" stop-color="#3d54ff" />
+        </linearGradient>
+        <radialGradient id="void-core" cx="130" cy="198" r="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#b9fdff" />
+          <stop offset="0.45" stop-color="#6dd6ff" />
+          <stop offset="1" stop-color="#1c2858" />
+        </radialGradient>
+        <radialGradient id="void-hand" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#dffcff" />
+          <stop offset="0.65" stop-color="#76c9ff" />
+          <stop offset="1" stop-color="#1a2a5a" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="260" height="360" rx="28" fill="url(#void-bg)" />
+      <circle cx="130" cy="110" r="150" fill="url(#void-aura)" />
+      <path d="M130 334C90 324 64 300 50 262C30 210 40 180 62 152C78 132 92 122 92 122C96 148 112 170 130 170C148 170 164 148 168 122C168 122 182 132 198 152C220 180 230 210 210 262C196 300 170 324 130 334Z" fill="url(#void-cloak)" stroke="rgba(108,132,210,0.5)" stroke-width="2" stroke-linejoin="round" />
+      <ellipse cx="130" cy="216" rx="84" ry="122" fill="rgba(34,52,104,0.28)" />
+      <path d="M88 118C98 82 114 66 130 66C146 66 162 82 172 118C182 154 184 206 176 240C166 282 148 310 130 310C112 310 94 282 84 240C76 206 78 154 88 118Z" fill="url(#void-armor)" stroke="rgba(208,224,255,0.9)" stroke-width="1.6" />
+      <path d="M102 134C86 128 68 112 64 92C60 70 78 58 100 64C116 68 126 84 126 104C126 122 118 138 110 148C108 150 106 140 102 134Z" fill="url(#void-skin)" stroke="rgba(210,226,255,0.55)" stroke-width="1.4" />
+      <path d="M158 134C174 128 192 112 196 92C200 70 182 58 160 64C144 68 134 84 134 104C134 122 142 138 150 148C152 150 154 140 158 134Z" fill="url(#void-skin)" stroke="rgba(210,226,255,0.55)" stroke-width="1.4" />
+      <path d="M76 184C52 182 38 164 40 142C42 118 70 110 92 122C110 132 118 156 112 176C108 190 92 186 76 184Z" fill="url(#void-energy)" fill-opacity="0.4" stroke="rgba(144,202,255,0.65)" stroke-width="1.2" />
+      <path d="M184 184C208 182 222 164 220 142C218 118 190 110 168 122C150 132 142 156 148 176C152 190 168 186 184 184Z" fill="url(#void-energy)" fill-opacity="0.4" stroke="rgba(144,202,255,0.65)" stroke-width="1.2" />
+      <circle cx="76" cy="176" r="20" fill="url(#void-hand)" />
+      <circle cx="184" cy="176" r="20" fill="url(#void-hand)" />
+      <circle cx="76" cy="176" r="8" fill="#e6fcff" />
+      <circle cx="184" cy="176" r="8" fill="#e6fcff" />
+      <path d="M110 72C110 54 120 42 130 42C140 42 150 54 150 72V94C150 108 140 120 130 120C120 120 110 108 110 94V72Z" fill="url(#void-skin)" stroke="rgba(220,232,255,0.7)" stroke-width="1.6" />
+      <path d="M118 82C118 78 122 74 126 74C130 74 132 78 132 82" stroke="#26346a" stroke-width="2.4" stroke-linecap="round" />
+      <path d="M138 82C138 78 142 74 146 74C150 74 152 78 152 82" stroke="#26346a" stroke-width="2.4" stroke-linecap="round" />
+      <path d="M120 92C124 96 136 96 140 92" stroke="#5bc8ff" stroke-width="2" stroke-linecap="round" />
+      <path d="M116 54C106 46 98 30 102 16C106 4 122 2 132 16C134 30 128 46 122 60Z" fill="url(#void-horn)" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" />
+      <path d="M144 54C154 46 162 30 158 16C154 4 138 2 128 16C126 30 132 46 138 60Z" fill="url(#void-horn)" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" />
+      <path d="M98 146C92 158 90 176 92 196C94 230 106 262 130 262C154 262 166 230 168 196C170 176 168 158 162 146C150 170 110 170 98 146Z" fill="rgba(20,30,64,0.4)" />
+      <circle cx="130" cy="198" r="38" fill="url(#void-core)" stroke="#a4f5ff" stroke-width="1.6" />
+      <path d="M98 198C108 212 120 220 130 220C140 220 152 212 162 198" stroke="rgba(210,240,255,0.65)" stroke-width="3.2" stroke-linecap="round" />
+      <path d="M110 198C110 186 118 176 130 176C142 176 150 186 150 198C150 210 142 220 130 220C118 220 110 210 110 198Z" fill="rgba(255,255,255,0.16)" />
+      <path d="M82 112C70 110 60 100 60 86C60 66 76 54 94 56" stroke="rgba(120,158,255,0.4)" stroke-width="3" stroke-linecap="round" />
+      <path d="M178 112C190 110 200 100 200 86C200 66 184 54 166 56" stroke="rgba(120,158,255,0.4)" stroke-width="3" stroke-linecap="round" />
+      <path d="M64 240C70 270 86 298 112 314" stroke="rgba(88,118,210,0.45)" stroke-width="2.2" stroke-linecap="round" />
+      <path d="M196 240C190 270 174 298 148 314" stroke="rgba(88,118,210,0.45)" stroke-width="2.2" stroke-linecap="round" />
+      <circle cx="130" cy="244" r="16" fill="rgba(98,158,255,0.32)" />
+      <path d="M118 248C124 254 136 254 142 248" stroke="#80deff" stroke-width="2.2" stroke-linecap="round" />
+    </svg>
+  `
+};
