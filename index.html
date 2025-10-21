@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>X-Game 元素連鎖 RPG</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game">
+      <header class="status-bar">
+        <section class="enemy-panel">
+          <h1 id="enemy-name">虛空審判者</h1>
+          <div class="hp-bar">
+            <div class="hp-fill" id="enemy-hp"></div>
+          </div>
+          <div class="enemy-info">
+            <span>HP：<span id="enemy-hp-text"></span></span>
+            <span>倒數：<span id="enemy-countdown"></span></span>
+          </div>
+          <p id="enemy-status" class="status-text"></p>
+        </section>
+
+        <section class="player-panel">
+          <div class="hp-section">
+            <div class="player-header">
+              <h2>守護者隊伍</h2>
+              <button id="open-team" class="control-button" type="button">
+                隊伍／圖鑑
+              </button>
+            </div>
+            <div class="hp-bar player">
+              <div class="hp-fill" id="player-hp"></div>
+            </div>
+            <div class="player-info">
+              HP：<span id="player-hp-text"></span>
+            </div>
+            <p id="player-status" class="status-text"></p>
+          </div>
+          <div class="heroes" id="heroes"></div>
+        </section>
+      </header>
+
+      <section class="board-section">
+        <div class="timer">
+          <span>移動時間</span>
+          <div class="timer-bar">
+            <div class="timer-fill" id="move-bar"></div>
+          </div>
+        </div>
+        <div class="board" id="board"></div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="skills">
+          <h3>英雄技能</h3>
+          <div id="skill-buttons" class="skill-buttons"></div>
+        </section>
+        <section class="battle-log">
+          <h3>戰鬥記錄</h3>
+          <ul id="log-list"></ul>
+        </section>
+        <section class="tips">
+          <h3>玩法提示</h3>
+          <ul>
+            <li>拖曳符石即可與相鄰符石交換位置。</li>
+            <li>時間歸零時將自動結束移動，開始結算連鎖。</li>
+            <li>達成 6 連鎖以上會觸發「靈能共鳴」，獲得額外傷害。</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <div id="team-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h2>隊伍編成與英雄圖鑑</h2>
+          <button id="close-team" class="icon-button" type="button" aria-label="關閉圖鑑">
+            ×
+          </button>
+        </header>
+        <p class="modal-intro">
+          選擇五名英雄組成隊伍，技能會在戰鬥中帶來不同的策略效果。點擊英雄卡即可加入或移除。
+        </p>
+        <section class="team-section">
+          <h3>目前隊伍</h3>
+          <div id="team-selected" class="team-selected"></div>
+          <p id="team-message" class="team-message"></p>
+        </section>
+        <section class="collection-section">
+          <h3>英雄圖鑑</h3>
+          <div id="collection-grid" class="collection-grid"></div>
+        </section>
+        <footer class="modal-footer">
+          <button id="apply-team" class="control-button primary" type="button">
+            套用隊伍並重新挑戰
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <h2 id="overlay-title"></h2>
+        <p id="overlay-message"></p>
+        <button id="restart-button">重新挑戰</button>
+      </div>
+    </div>
+
+    <script src="game.js" type="module"></script>
+  </body>
+</html>
