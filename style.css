@@ -178,9 +178,52 @@ body {
 }
 
 .hero-portrait {
-  height: 72px;
-  border-radius: 12px;
+  position: relative;
+  height: 92px;
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.08));
   box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.hero-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.hero-portrait svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero-icon,
+.skill-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-icon-fallback {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: rgba(15, 24, 48, 0.9);
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.4);
 }
 
 .hero-element {
@@ -336,28 +379,65 @@ body {
 
 .skill-button {
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(90deg, #7bc6ff, #5a7bff);
-  color: #0b1632;
+  background: var(--skill-gradient, linear-gradient(90deg, #7bc6ff, #5a7bff));
+  color: #061530;
   font-weight: 600;
   transition: transform 0.15s ease, filter 0.15s ease;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(25, 50, 100, 0.35);
 }
 
 .skill-button:disabled {
   cursor: not-allowed;
-  background: rgba(123, 198, 255, 0.32);
-  color: rgba(255, 255, 255, 0.6);
-  filter: grayscale(0.2);
+  filter: grayscale(0.35) brightness(0.85);
 }
 
 .skill-button:not(:disabled):active {
   transform: scale(0.97);
+}
+
+.skill-button-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  padding: 6px;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.16));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.skill-button-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.skill-icon-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  color: #051224;
+}
+
+.skill-button-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .skill-button-title {
@@ -367,7 +447,7 @@ body {
 
 .skill-button-desc {
   font-size: 0.78rem;
-  color: rgba(11, 22, 50, 0.75);
+  color: rgba(11, 22, 50, 0.74);
 }
 
 .battle-log ul,
@@ -450,7 +530,7 @@ body {
   border: 1px solid rgba(123, 198, 255, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .team-slot.empty {
@@ -469,17 +549,82 @@ body {
 
 .team-slot p {
   margin: 0;
-  font-size: 0.85rem;
   color: #c5d8ff;
+  font-size: 0.82rem;
+}
+
+.team-slot-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.team-slot-icon {
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+  border-radius: 14px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.team-slot-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.team-slot-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.team-slot-meta {
+  font-size: 0.82rem;
 }
 
 .team-slot-skill {
-  font-size: 0.8rem;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.team-slot-skill-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  padding: 4px;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.team-slot-skill-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.team-slot-skill-text {
+  margin: 0;
+  font-size: 0.78rem;
   color: #9fb6ff;
+  line-height: 1.4;
 }
 
 .team-slot-remove {
   align-self: flex-end;
+  margin-top: auto;
   border: none;
   border-radius: 999px;
   padding: 6px 12px;
@@ -537,6 +682,25 @@ body {
   color: #ffd166;
 }
 
+.collection-portrait {
+  width: 100%;
+  height: 110px;
+  border-radius: 16px;
+  padding: 8px;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
+}
+
+.collection-portrait svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .collection-element {
   align-self: flex-start;
   padding: 4px 10px;
@@ -553,8 +717,34 @@ body {
 }
 
 .collection-skill {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.collection-skill-icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  padding: 4px;
+  background: var(--element-gradient, rgba(255, 255, 255, 0.12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.collection-skill-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.collection-skill-text {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: #a8bdfd;
   line-height: 1.4;
 }
