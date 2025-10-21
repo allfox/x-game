@@ -153,51 +153,82 @@ function createSkillIcon(id, element, shapes) {
 }
 
 const heroArtConfig = [
-  // Fire heroes
+  // Fire heroes - 中世紀風格角色設計
   {
     id: 'ember-sovereign',
     element: 'fire',
     heroShapes: [
-      pathShape('M40 16 C47 25 50 33 47 40 C45 45 47 50 52 55 C43 52 37 45 34 38 C31 31 34 22 40 16 Z', {
-        fill: '#ffcf6f',
-        stroke: '#ff8246',
-        'stroke-width': 1.6,
-        'stroke-linejoin': 'round'
-      }),
-      polygonShape('28,46 26,32 33,36 40,30 47,36 54,32 52,46', {
-        fill: 'none',
-        stroke: '#ffe0a6',
+      // 君王身軀與披風
+      pathShape('M32 46 L28 56 L34 58 L40 60 L46 58 L52 56 L48 46 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
         'stroke-width': 1.8,
         'stroke-linejoin': 'round'
       }),
-      circleShape(40, 52, 4.5, {
-        fill: '#ff8246',
-        stroke: '#ffd18c',
+      // 頭部
+      circleShape(40, 36, 6, {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.5
+      }),
+      // 王冠
+      pathShape('M34 32 L36 28 L38 32 L40 26 L42 32 L44 28 L46 32 L44 34 L36 34 Z', {
+        fill: '#ffe7b3',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
+      }),
+      // 王冠寶石
+      circleShape(40, 30, 2, {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1
+      }),
+      // 眼睛
+      circleShape(37, 36, 1, { fill: '#ff5e3a' }),
+      circleShape(43, 36, 1, { fill: '#ff5e3a' }),
+      // 披風火焰紋
+      pathShape('M32 52 C34 50 36 50 38 52', {
+        fill: 'none',
+        stroke: '#ffad63',
         'stroke-width': 1.2,
-        'stroke-opacity': 0.8
+        'stroke-linecap': 'round'
+      }),
+      pathShape('M42 52 C44 50 46 50 48 52', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.2,
+        'stroke-linecap': 'round'
+      }),
+      // 火焰光環
+      pathShape('M32 34 C30 32 28 32 28 34', {
+        fill: '#ffad63',
+        'fill-opacity': 0.7
+      }),
+      pathShape('M48 34 C50 32 52 32 52 34', {
+        fill: '#ffad63',
+        'fill-opacity': 0.7
       })
     ],
     skillShapes: [
-      pathShape('M26 50 C26 36 39 28 52 32', {
+      // 熾焰輪迴 - 火焰漩渦
+      pathShape('M40 28 C48 28 54 34 54 42 C54 50 48 56 40 56 C32 56 26 50 26 42 C26 34 32 28 40 28', {
         fill: 'none',
         stroke: '#ff8246',
-        'stroke-width': 2.6,
+        'stroke-width': 2.8,
         'stroke-linecap': 'round'
       }),
-      polygonShape('52,32 46,28 48,36', {
-        fill: '#ff8246',
-        stroke: '#ffd18c',
-        'stroke-width': 1
+      pathShape('M40 32 C44 32 48 36 48 42 C48 46 44 50 40 50 C36 50 32 46 32 42 C32 36 36 32 40 32', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
+        'stroke-linecap': 'round'
       }),
-      pathShape('M40 40 C42.5 44 42.5 48 40 53 C37.5 48 37.5 44 40 40 Z', {
-        fill: '#6ed374',
-        stroke: '#2f9350',
-        'stroke-width': 1
-      }),
-      circleShape(32, 56, 3, {
-        fill: '#ffcf6f',
-        'fill-opacity': 0.8
-      })
+      // 火焰粒子
+      circleShape(28, 36, 2, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      circleShape(52, 38, 2.5, { fill: '#ff5e3a', 'fill-opacity': 0.8 }),
+      circleShape(30, 48, 2, { fill: '#ffe7b3', 'fill-opacity': 0.9 }),
+      circleShape(50, 46, 2.5, { fill: '#ffad63', 'fill-opacity': 0.8 })
     ]
   },
 
@@ -205,458 +236,852 @@ const heroArtConfig = [
     id: 'drake-artillerist',
     element: 'fire',
     heroShapes: [
-      pathShape('M28 44 C28 32 38 26 46 28 C52 30 54 36 50 42 C46 47 38 50 32 48 C34 52 36 54 38 56 C32 54 28 50 28 44 Z', {
-        fill: '#ffb36f',
-        stroke: '#ff663b',
-        'stroke-width': 1.4,
+      // 龍頭輪廓
+      pathShape('M24 42 C24 38 26 34 30 32 L36 28 L42 26 C46 26 50 28 52 32 C54 36 54 40 52 44 L48 50 C46 52 42 54 38 54 C34 54 30 52 28 48 L24 42 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2,
         'stroke-linejoin': 'round'
       }),
-      pathShape('M34 48 C40 42 48 44 54 50 C48 52 40 54 34 48 Z', {
-        fill: '#ff6f3e',
+      // 龍角
+      pathShape('M36 28 C34 24 34 20 36 18 C37 21 38 24 38 28 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.2
+      }),
+      pathShape('M42 26 C44 22 46 20 48 18 C47 21 46 24 44 28 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.2
+      }),
+      // 龍眼
+      circleShape(36, 36, 3, {
+        fill: '#ffe7b3',
+        stroke: '#ff5e3a',
+        'stroke-width': 1
+      }),
+      circleShape(36, 36, 1.5, {
+        fill: '#ff5e3a'
+      }),
+      // 龍鼻孔噴火
+      pathShape('M28 44 C24 44 22 46 20 48 C22 46 24 46 28 44', {
+        fill: '#ffad63',
+        'fill-opacity': 0.9
+      }),
+      pathShape('M30 48 C26 50 24 52 22 54 C24 52 26 52 30 48', {
+        fill: '#ffad63',
+        'fill-opacity': 0.9
+      }),
+      // 龍鱗紋
+      pathShape('M38 40 L44 38 L42 42 Z', {
+        fill: '#ffcf6f',
         'fill-opacity': 0.6
       }),
-      polylineShape('30,34 44,26 52,30', {
-        stroke: '#ffe5c6',
-        'stroke-width': 1.8,
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
-      }),
-      circleShape(45, 35, 2.2, {
-        fill: '#ff8246',
-        stroke: '#ffd8aa',
-        'stroke-width': 0.8
+      pathShape('M40 46 L46 44 L44 48 Z', {
+        fill: '#ffcf6f',
+        'fill-opacity': 0.6
       })
     ],
     skillShapes: [
-      pathShape('M32 48 C32 36 42 30 52 34', {
+      // 龍紋爆裂 - 爆炸符文
+      circleShape(40, 42, 12, {
         fill: 'none',
         stroke: '#ff8246',
-        'stroke-width': 2.2,
-        'stroke-linecap': 'round'
+        'stroke-width': 2.5,
+        'stroke-dasharray': '8 4'
       }),
-      polygonShape('52,34 46,30 48,38', {
-        fill: '#ff8246',
-        stroke: '#ffd8ad',
-        'stroke-width': 0.8
-      }),
-      pathShape('M34 44 C34 38 40 36 40 40 C40 36 46 38 46 44 C46 50 40 55 40 55 C40 55 34 50 34 44 Z', {
-        fill: '#ff8fbf',
-        stroke: '#ffd4de',
-        'stroke-width': 1
-      }),
-      pathShape('M46 44 C50 47 52 51 50 55 C48 58 52 60 56 58 C50 64 44 60 44 52 C44 48 45 46 46 44 Z', {
-        fill: '#ff6a3c',
-        stroke: '#ffd18c',
-        'stroke-width': 1.2,
+      // 龍紋符號
+      pathShape('M36 36 L44 36 L44 44 L36 44 Z', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
         'stroke-linejoin': 'round'
       }),
-      circleShape(30, 54, 2.2, {
-        fill: '#ffe0a6'
-      })
+      pathShape('M32 40 L36 40 M44 40 L48 40', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.8,
+        'stroke-linecap': 'round'
+      }),
+      pathShape('M40 32 L40 36 M40 44 L40 48', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.8,
+        'stroke-linecap': 'round'
+      }),
+      // 爆炸火花
+      starShape(30, 32, 4, 3, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 }),
+      starShape(50, 34, 4, 3.5, 1.5, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      starShape(32, 50, 4, 3, 1.5, { fill: '#ffe7b3', 'fill-opacity': 0.9 }),
+      starShape(48, 48, 4, 3.5, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 })
     ]
   },
   {
     id: 'radiant-vanguard',
     element: 'fire',
     heroShapes: [
-      pathShape('M40 20 L56 28 L52 48 C49 54 44 58 40 60 C36 58 31 54 28 48 L24 28 Z', {
-        fill: '#ffcf6f',
-        stroke: '#ff8246',
-        'stroke-width': 1.6,
+      // 騎士身軀與鎧甲
+      pathShape('M32 44 L28 54 L32 58 L40 60 L48 58 L52 54 L48 44 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2,
         'stroke-linejoin': 'round'
       }),
-      pathShape('M40 22 L42 44 L38 52 L36 48 L38 46 L36 28 Z', {
-        fill: '#ffe5cc',
+      // 頭盔
+      pathShape('M34 36 L32 42 L34 44 L46 44 L48 42 L46 36 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      // 頭盔頂部
+      pathShape('M36 36 L38 32 L40 28 L42 32 L44 36 Z', {
+        fill: '#ffe7b3',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
+      }),
+      // 面甲十字縫
+      pathShape('M40 38 L40 44', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.5
+      }),
+      pathShape('M36 40 L44 40', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.5
+      }),
+      // 肩甲
+      pathShape('M28 46 L26 48 L28 50 L30 48 Z', {
+        fill: '#ffcf6f',
         stroke: '#ff6433',
         'stroke-width': 1.2
       }),
-      pathShape('M48 34 C52 38 52 44 48 48 C46 50 48 54 52 54 C46 56 42 52 42 46 C42 40 44 36 48 34 Z', {
-        fill: '#ff9152',
-        'fill-opacity': 0.7
+      pathShape('M52 46 L54 48 L52 50 L50 48 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.2
+      }),
+      // 盾牌（手持）
+      pathShape('M24 48 L22 52 L24 56 L28 56 L28 52 Z', {
+        fill: '#ffe7b3',
+        stroke: '#ff8246',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
+      }),
+      // 火焰光芒
+      pathShape('M40 26 L38 28 L42 28 Z', {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
       })
     ],
     skillShapes: [
-      pathShape('M24 52 L54 26', {
+      // 煌焰審判 - 聖劍斬擊
+      pathShape('M40 22 L40 58', {
         fill: 'none',
-        stroke: '#ffe0a6',
-        'stroke-width': 3.4,
+        stroke: '#ffe7b3',
+        'stroke-width': 4,
         'stroke-linecap': 'round'
       }),
-      pathShape('M30 58 L58 30', {
+      pathShape('M40 24 L40 56', {
         fill: 'none',
         stroke: '#ff8246',
-        'stroke-width': 2,
+        'stroke-width': 2.5,
         'stroke-linecap': 'round'
       }),
-      polylineShape('44,28 48,32 52,30', {
-        stroke: '#ffd0a0',
-        'stroke-width': 1.4,
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round'
+      // 劍柄護手
+      pathShape('M30 34 L50 34', {
+        fill: 'none',
+        stroke: '#ffd18c',
+        'stroke-width': 3,
+        'stroke-linecap': 'round'
       }),
-      starShape(52, 32, 4, 4, 2, {
-        fill: '#ffe7b3',
-        'fill-opacity': 0.85
-      })
+      // 光芒
+      pathShape('M36 26 L40 22 L44 26', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round',
+        'stroke-linecap': 'round'
+      }),
+      // 火焰粒子
+      starShape(26, 40, 4, 4, 2, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      starShape(54, 42, 4, 4, 2, { fill: '#ff5e3a', 'fill-opacity': 0.9 }),
+      circleShape(32, 50, 2, { fill: '#ffe7b3', 'fill-opacity': 0.8 }),
+      circleShape(48, 48, 2, { fill: '#ffad63', 'fill-opacity': 0.8 })
     ]
   },
   {
     id: 'cinder-ronin',
     element: 'fire',
     heroShapes: [
-      pathShape('M28 48 C34 30 46 26 54 30 C48 34 40 40 34 58 Z', {
-        fill: '#ffe5cc',
-        stroke: '#ff7342',
-        'stroke-width': 1.4
-      }),
-      pathShape('M24 44 C26 34 30 28 38 26 C32 34 32 42 34 52 C36 60 30 60 24 54 Z', {
+      // 浪人身軀與和服
+      pathShape('M32 44 L28 52 L32 58 L40 60 L48 58 L52 52 L48 44 L46 48 L34 48 Z', {
         fill: '#ff8246',
-        'fill-opacity': 0.7
+        stroke: '#ffd18c',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
       }),
-      pathShape('M42 34 C48 36 50 42 46 48 C44 52 46 54 50 56 C44 56 40 52 40 46 C40 40 42 36 42 34 Z', {
+      // 頭部
+      circleShape(40, 36, 5, {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.5
+      }),
+      // 斗笠
+      pathShape('M32 32 L28 34 L30 36 L50 36 L52 34 L48 32 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M34 32 L40 28 L46 32 Z', {
+        fill: '#ffad63',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.2,
+        'stroke-linejoin': 'round'
+      }),
+      // 眼睛
+      pathShape('M36 36 L38 36', {
         fill: 'none',
-        stroke: '#ffd4aa',
+        stroke: '#ff5e3a',
         'stroke-width': 1.2,
         'stroke-linecap': 'round'
+      }),
+      pathShape('M42 36 L44 36', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.2,
+        'stroke-linecap': 'round'
+      }),
+      // 刀柄（腰間配刀）
+      pathShape('M48 50 L56 48', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2.5,
+        'stroke-linecap': 'round'
+      }),
+      // 和服紋路
+      pathShape('M36 50 C38 48 42 48 44 50', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1,
+        'stroke-linecap': 'round'
+      }),
+      // 火焰餘燼
+      circleShape(30, 56, 1.5, {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
       })
     ],
     skillShapes: [
-      pathShape('M26 56 L50 28', {
+      // 焦土灼刃 - 烈焰斬擊
+      pathShape('M22 58 L58 22', {
         fill: 'none',
-        stroke: '#ffe0a6',
-        'stroke-width': 2.4,
+        stroke: '#ffe7b3',
+        'stroke-width': 4.5,
         'stroke-linecap': 'round'
       }),
-      pathShape('M34 60 L56 32', {
+      pathShape('M24 58 L58 24', {
         fill: 'none',
-        stroke: '#ff7040',
+        stroke: '#ff8246',
+        'stroke-width': 3,
+        'stroke-linecap': 'round'
+      }),
+      // 火焰波紋
+      pathShape('M32 58 C34 52 38 48 44 46', {
+        fill: 'none',
+        stroke: '#ffad63',
         'stroke-width': 2,
-        'stroke-linecap': 'round'
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.8
       }),
-      pathShape('M44 34 C50 38 52 46 48 52 C46 56 50 58 54 58 C48 64 40 60 40 50 C40 44 42 38 44 34 Z', {
-        fill: '#ff934f',
-        'fill-opacity': 0.6
+      pathShape('M28 54 C32 48 38 42 46 38', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 1.5,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.7
       }),
-      pathShape('M28 40 L32 34 L36 40 Z', {
-        fill: '#ffd98f',
-        stroke: '#ffe9c0',
-        'stroke-width': 0.8
-      })
+      // 火花
+      starShape(36, 52, 4, 4, 1.5, { fill: '#ffe7b3', 'fill-opacity': 0.9 }),
+      starShape(44, 44, 4, 3.5, 1.5, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      starShape(52, 36, 4, 4, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 })
     ]
   },
   {
     id: 'ash-bard',
     element: 'fire',
     heroShapes: [
-      pathShape('M30 24 Q28 38 34 50 Q36 56 32 58 Q44 56 48 38 Q50 30 46 24 Z', {
+      // 詠者身軀與長袍
+      pathShape('M34 46 L30 54 L34 58 L40 60 L46 58 L50 54 L46 46 L44 50 L36 50 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
+      }),
+      // 頭部
+      circleShape(40, 36, 5.5, {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.5
+      }),
+      // 帽子（吟遊詩人帽）
+      pathShape('M34 32 L32 30 L34 28 L40 26 L46 28 L48 30 L46 32 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M38 26 L40 22 L42 26 Z', {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
+      }),
+      // 眼睛
+      circleShape(37, 36, 1, { fill: '#ff5e3a' }),
+      circleShape(43, 36, 1, { fill: '#ff5e3a' }),
+      // 嘴巴（唱歌）
+      pathShape('M38 40 C39 41 41 41 42 40', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 1,
+        'stroke-linecap': 'round'
+      }),
+      // 手持魯特琴（小）
+      pathShape('M48 48 Q50 50 50 54 Q50 56 48 56', {
         fill: 'none',
         stroke: '#ffe7b3',
-        'stroke-width': 1.6
-      }),
-      pathShape('M34 28 L44 48', {
-        fill: 'none',
-        stroke: '#ff9f65',
-        'stroke-width': 1
-      }),
-      pathShape('M36 26 L46 46', {
-        fill: 'none',
-        stroke: '#ff9f65',
-        'stroke-width': 1
-      }),
-      pathShape('M38 24 L48 44', {
-        fill: 'none',
-        stroke: '#ff8246',
-        'stroke-width': 1
-      }),
-      pathShape('M50 36 C56 34 58 40 54 44 C52 46 52 48 54 50 C50 50 48 48 48 44 C48 40 49 38 50 36 Z', {
-        fill: '#ffb36f'
-      })
-    ],
-    skillShapes: [
-      pathShape('M26 46 C26 34 38 30 46 34 C54 38 56 48 48 54 C42 58 34 56 30 50', {
-        fill: 'none',
-        stroke: '#ff9152',
         'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      pathShape('M50 38 L50 56 C50 59 47 62 44 60 C41 58 44 54 47 54 L47 40 Z', {
-        fill: '#ffb978',
-        stroke: '#ffe4bc',
-        'stroke-width': 1
+      // 音符飄揚
+      pathShape('M52 40 C52 38 54 38 54 40 L54 44', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.3,
+        'stroke-linecap': 'round'
       }),
-      starShape(34, 40, 5, 5, 2.5, {
-        fill: '#ffe7b3',
-        'fill-opacity': 0.7
+      circleShape(54, 44, 1.3, { fill: '#ffad63' }),
+      pathShape('M56 36 C56 34 58 34 58 36 L58 40', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.3,
+        'stroke-linecap': 'round'
       }),
-      circleShape(42, 48, 2, {
-        fill: '#ffd9aa'
-      })
+      circleShape(58, 40, 1.3, { fill: '#ffe7b3' })
+    ],
+    skillShapes: [
+      // 餘燼共鳴 - 音波
+      pathShape('M26 42 C26 34 32 28 40 28 C48 28 54 34 54 42 C54 50 48 56 40 56 C32 56 26 50 26 42', {
+        fill: 'none',
+        stroke: '#ff8246',
+        'stroke-width': 2.5,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.8
+      }),
+      pathShape('M30 42 C30 36 34 32 40 32 C46 32 50 36 50 42 C50 48 46 52 40 52 C34 52 30 48 30 42', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 2,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.7
+      }),
+      pathShape('M34 42 C34 38 36 36 40 36 C44 36 46 38 46 42 C46 46 44 48 40 48 C36 48 34 46 34 42', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.9
+      }),
+      // 音符粒子
+      circleShape(24, 38, 2, { fill: '#ffad63', 'fill-opacity': 0.8 }),
+      circleShape(56, 44, 2, { fill: '#ff5e3a', 'fill-opacity': 0.8 }),
+      circleShape(28, 50, 1.5, { fill: '#ffe7b3', 'fill-opacity': 0.9 })
     ]
   },
   {
     id: 'lava-herder',
     element: 'fire',
     heroShapes: [
-      pathShape('M30 48 C30 36 38 28 46 28 C52 28 58 32 58 40 C58 48 52 52 46 52 C42 52 38 56 38 60 C34 56 30 52 30 48 Z', {
+      // 野獸頭部輪廓（狼）
+      pathShape('M26 38 C26 32 28 28 32 26 L38 24 L44 26 C48 28 50 32 50 38 L50 44 C50 48 48 50 44 52 L40 54 C36 54 32 52 30 48 L26 42 Z', {
         fill: '#ff8246',
-        stroke: '#ffb679',
-        'stroke-width': 1.4,
+        stroke: '#ffd18c',
+        'stroke-width': 2,
         'stroke-linejoin': 'round'
       }),
-      pathShape('M48 28 C54 26 58 30 58 36 C56 32 52 30 48 28 Z', {
-        fill: '#ffcf8b'
-      }),
-      polylineShape('34,48 40,44 46,48 50,44', {
-        stroke: '#ffd7a0',
+      // 獸耳
+      pathShape('M32 26 L30 20 L34 24 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
         'stroke-width': 1.2,
-        'stroke-linecap': 'round',
         'stroke-linejoin': 'round'
       }),
-      circleShape(34, 56, 2.4, {
-        fill: '#ffae63'
+      pathShape('M44 26 L46 20 L42 24 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.2,
+        'stroke-linejoin': 'round'
+      }),
+      // 獸眼
+      circleShape(34, 36, 2.5, {
+        fill: '#ffe7b3',
+        stroke: '#ff5e3a',
+        'stroke-width': 1
+      }),
+      circleShape(42, 36, 2.5, {
+        fill: '#ffe7b3',
+        stroke: '#ff5e3a',
+        'stroke-width': 1
+      }),
+      // 瞳孔
+      circleShape(34, 36, 1, { fill: '#ff5e3a' }),
+      circleShape(42, 36, 1, { fill: '#ff5e3a' }),
+      // 獸鼻與嘴
+      polygonShape('38,42 36,44 38,45 40,44', {
+        fill: '#ff6433'
+      }),
+      // 熔岩滴落
+      pathShape('M32 52 C32 54 30 56 30 58 C30 56 28 54 28 52', {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
+      }),
+      pathShape('M40 54 C40 56 38 58 38 60 C38 58 36 56 36 54', {
+        fill: '#ff5e3a',
+        'fill-opacity': 0.8
+      }),
+      pathShape('M48 52 C48 54 46 56 46 58 C46 56 44 54 44 52', {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
       })
     ],
     skillShapes: [
-      pathShape('M26 46 C30 36 42 34 52 38 C58 40 58 48 52 50 C44 52 36 50 30 56', {
-        fill: 'none',
-        stroke: '#ff743a',
-        'stroke-width': 2.4,
-        'stroke-linecap': 'round'
+      // 熔爐奔流 - 野獸爪印
+      pathShape('M28 44 L32 36 L34 44 Z', {
+        fill: '#ff8246',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
       }),
-      circleShape(54, 44, 6.2, {
-        fill: 'none',
-        stroke: '#ffd18c',
-        'stroke-width': 1.6
+      pathShape('M36 42 L40 34 L42 42 Z', {
+        fill: '#ff8246',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
       }),
-      pathShape('M54 40 L54 44 L58 46', {
-        fill: 'none',
-        stroke: '#ffd18c',
-        'stroke-width': 1.3,
-        'stroke-linecap': 'round'
+      pathShape('M44 44 L48 36 L50 44 Z', {
+        fill: '#ff8246',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.5,
+        'stroke-linejoin': 'round'
       }),
-      circleShape(40, 60, 2, {
-        fill: '#ffe0a6'
-      })
+      // 掌墊
+      pathShape('M34 48 C34 46 36 44 40 44 C44 44 46 46 46 48 C46 52 44 54 40 54 C36 54 34 52 34 48', {
+        fill: '#ff8246',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      // 熔岩效果
+      circleShape(26, 50, 2, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      circleShape(52, 48, 2.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 }),
+      circleShape(38, 58, 2, { fill: '#ffe7b3', 'fill-opacity': 0.8 })
     ]
   },
   {
     id: 'crimson-duelist',
     element: 'fire',
     heroShapes: [
-      pathShape('M28 58 L52 26', {
-        fill: 'none',
-        stroke: '#ffe5c6',
-        'stroke-width': 2.6,
-        'stroke-linecap': 'round'
+      // 決鬥者身軀（女性輕甲）
+      pathShape('M34 44 L30 52 L34 58 L40 60 L46 58 L50 52 L46 44 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
       }),
-      pathShape('M32 26 L56 56', {
+      // 頭部
+      circleShape(40, 34, 5.5, {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.5
+      }),
+      // 長髮（馬尾）
+      pathShape('M46 32 L50 28 L52 32 L50 36 L48 34 Z', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.3,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M48 36 L50 40 L48 44', {
         fill: 'none',
-        stroke: '#ff7844',
+        stroke: '#ff5e3a',
         'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      circleShape(40, 40, 7.2, {
-        fill: 'none',
-        stroke: '#ff9156',
-        'stroke-width': 1.5,
-        'stroke-dasharray': '6 3'
-      }),
-      circleShape(40, 42, 3.2, {
-        fill: '#ffd8a2'
-      })
-    ],
-    skillShapes: [
-      pathShape('M24 54 C30 42 44 36 58 34', {
+      // 眼睛
+      circleShape(37, 34, 1, { fill: '#ff5e3a' }),
+      circleShape(43, 34, 1, { fill: '#ff5e3a' }),
+      // 劍姿（持劍準備攻擊）
+      pathShape('M52 48 L58 42', {
         fill: 'none',
         stroke: '#ffe7b3',
-        'stroke-width': 2.8,
+        'stroke-width': 2.5,
         'stroke-linecap': 'round'
       }),
-      circleShape(48, 32, 7.8, {
+      // 護手
+      pathShape('M52 48 L54 50', {
         fill: 'none',
-        stroke: '#ff924f',
-        'stroke-width': 1.8
+        stroke: '#ffad63',
+        'stroke-width': 2,
+        'stroke-linecap': 'round'
       }),
-      pathShape('M48 25 L48 32 L54 32', {
+      // 輕甲紋飾
+      pathShape('M36 48 C38 46 42 46 44 48', {
         fill: 'none',
-        stroke: '#ffd18c',
+        stroke: '#ffad63',
         'stroke-width': 1.2,
         'stroke-linecap': 'round'
       }),
-      starShape(32, 48, 4, 4, 2, {
-        fill: '#ffcf8f',
-        'fill-opacity': 0.8
+      // 動態線條
+      pathShape('M56 44 C54 42 52 42 50 44', {
+        fill: '#ff5e3a',
+        'fill-opacity': 0.6
       })
+    ],
+    skillShapes: [
+      // 紅蓮瞬斬 - 快速斬擊軌跡
+      pathShape('M24 54 L56 26', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 4,
+        'stroke-linecap': 'round'
+      }),
+      pathShape('M26 56 L58 28', {
+        fill: 'none',
+        stroke: '#ff8246',
+        'stroke-width': 2.8,
+        'stroke-linecap': 'round'
+      }),
+      // 紅蓮火焰
+      pathShape('M32 52 C34 48 36 46 40 44', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 2,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.8
+      }),
+      pathShape('M44 40 C48 36 50 34 54 32', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.8,
+        'stroke-linecap': 'round',
+        'stroke-opacity': 0.7
+      }),
+      // 火花
+      starShape(30, 50, 4, 4, 1.5, { fill: '#ffe7b3', 'fill-opacity': 0.9 }),
+      starShape(40, 42, 4, 3.5, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 }),
+      starShape(50, 34, 4, 4, 1.5, { fill: '#ffad63', 'fill-opacity': 0.9 })
     ]
   },
   {
     id: 'magmabreaker',
     element: 'fire',
     heroShapes: [
-      pathShape('M28 48 C28 38 36 32 44 32 C50 32 56 36 56 44 C56 50 52 56 44 58 C36 60 30 56 28 48 Z', {
-        fill: '#ff7e49',
-        stroke: '#ffb480',
-        'stroke-width': 1.6,
+      // 重裝戰士身軀
+      pathShape('M30 44 L26 54 L30 58 L40 60 L50 58 L54 54 L50 44 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2.2,
         'stroke-linejoin': 'round'
       }),
-      pathShape('M32 30 L46 24 L50 30 L36 36 Z', {
-        fill: '#ffcf8b',
-        'fill-opacity': 0.6
-      }),
-      pathShape('M24 54 L20 60', {
-        fill: 'none',
+      // 頭盔（全罩式）
+      pathShape('M32 36 L30 42 L34 44 L46 44 L50 42 L48 36 Z', {
+        fill: '#ff5e3a',
         stroke: '#ffe7b3',
-        'stroke-width': 1.4,
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M34 36 L36 32 L40 30 L44 32 L46 36 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      // 面甲縫隙（眼睛）
+      pathShape('M36 38 L38 38', {
+        fill: 'none',
+        stroke: '#ff5e3a',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      pathShape('M60 40 L66 40', {
+      pathShape('M42 38 L44 38', {
         fill: 'none',
-        stroke: '#ffe7b3',
-        'stroke-width': 1.4,
+        stroke: '#ff5e3a',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      pathShape('M48 60 L52 66', {
+      // 厚重肩甲
+      pathShape('M26 46 L22 48 L24 52 L28 50 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M54 46 L58 48 L56 52 L52 50 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      // 鐵拳（右手）
+      pathShape('M52 52 L58 54 L60 56 L58 58 L54 56 Z', {
+        fill: '#ffe7b3',
+        stroke: '#ff8246',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
+      }),
+      // 熔岩裂紋
+      pathShape('M36 48 C38 50 42 50 44 48', {
         fill: 'none',
-        stroke: '#ffe7b3',
-        'stroke-width': 1.4,
+        stroke: '#ffad63',
+        'stroke-width': 1.5,
         'stroke-linecap': 'round'
-      })
+      }),
+      // 火焰粒子
+      circleShape(24, 52, 1.5, { fill: '#ffad63', 'fill-opacity': 0.8 })
     ],
     skillShapes: [
-      circleShape(36, 44, 9, {
-        fill: 'rgba(255, 193, 120, 0.3)',
-        stroke: '#ffd3a0',
-        'stroke-width': 1.4
+      // 熔爆重拳 - 衝擊波
+      circleShape(40, 42, 12, {
+        fill: 'none',
+        stroke: '#ff8246',
+        'stroke-width': 3,
+        'stroke-opacity': 0.8
       }),
-      pathShape('M30 50 C30 42 36 38 42 38 C48 38 54 42 54 48 C54 54 48 58 42 58 C36 58 32 56 30 50 Z', {
-        fill: '#ff8a4f',
+      circleShape(40, 42, 8, {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2.5,
+        'stroke-opacity': 0.9
+      }),
+      // 中心拳頭
+      pathShape('M36 38 L34 42 L36 46 L44 46 L46 42 L44 38 Z', {
+        fill: '#ff8246',
         stroke: '#ffd18c',
-        'stroke-width': 1.4,
+        'stroke-width': 2,
         'stroke-linejoin': 'round'
       }),
-      pathShape('M45 36 L50 32', {
+      // 爆炸碎片
+      pathShape('M28 34 L24 30', {
         fill: 'none',
-        stroke: '#ffb475',
-        'stroke-width': 1.2,
+        stroke: '#ffad63',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      pathShape('M48 40 L54 38', {
+      pathShape('M52 34 L56 30', {
         fill: 'none',
-        stroke: '#ffb475',
-        'stroke-width': 1.2,
+        stroke: '#ff5e3a',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      polygonShape('54,48 60,46 58,52', {
-        fill: '#ff9a5a'
-      })
+      pathShape('M30 50 L26 54', {
+        fill: 'none',
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
+        'stroke-linecap': 'round'
+      }),
+      starShape(22, 42, 4, 3, 1.5, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      starShape(58, 42, 4, 3, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.9 })
     ]
   },
   {
     id: 'pyrolumen',
     element: 'fire',
     heroShapes: [
-      circleShape(34, 36, 10, {
-        fill: 'none',
-        stroke: '#ffdca2',
-        'stroke-width': 1.6
-      }),
-      circleShape(48, 44, 11, {
-        fill: 'none',
-        stroke: '#ff8a52',
+      // 雙子身軀（左邊火）
+      pathShape('M28 46 L24 54 L28 58 L34 60 L36 54 L34 46 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
         'stroke-width': 1.8,
-        'stroke-dasharray': '6 3'
+        'stroke-linejoin': 'round'
       }),
-      starShape(34, 34, 5, 5.5, 2.5, {
+      // 雙子身軀（右邊光）
+      pathShape('M46 46 L44 54 L46 60 L52 58 L56 54 L52 46 Z', {
+        fill: '#ffcf6f',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.8,
+        'stroke-linejoin': 'round'
+      }),
+      // 左頭（火）
+      circleShape(32, 38, 4.5, {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.3
+      }),
+      // 右頭（光）
+      circleShape(48, 38, 4.5, {
         fill: '#ffe7b3',
+        stroke: '#ff8246',
+        'stroke-width': 1.3
+      }),
+      // 左眼
+      circleShape(32, 38, 1, { fill: '#ffe7b3' }),
+      // 右眼
+      circleShape(48, 38, 1, { fill: '#ff5e3a' }),
+      // 火焰光環（左）
+      starShape(32, 32, 5, 4, 2, {
+        fill: '#ffad63',
         'fill-opacity': 0.8
       }),
-      starShape(50, 48, 5, 6, 2.5, {
-        fill: '#ff9c5e',
+      // 光芒（右）
+      starShape(48, 32, 4, 4, 2.5, {
+        fill: '#ffe7b3',
         'fill-opacity': 0.9
       }),
-      pathShape('M30 50 C36 46 44 44 50 38', {
+      // 連結能量
+      pathShape('M36 50 C38 48 42 48 44 50', {
         fill: 'none',
-        stroke: '#ffd4a0',
-        'stroke-width': 1.2,
+        stroke: '#ffad63',
+        'stroke-width': 1.5,
         'stroke-linecap': 'round'
+      }),
+      // 火焰粒子
+      circleShape(40, 44, 2, {
+        fill: '#ff8246',
+        'fill-opacity': 0.7
       })
     ],
     skillShapes: [
-      circleShape(40, 40, 8, {
-        fill: '#ffe8c2',
-        stroke: '#ffd086',
-        'stroke-width': 1.4
-      }),
-      pathShape('M28 40 C28 28 36 22 48 24', {
+      // 雙星連弧 - 交織軌跡
+      pathShape('M26 50 C32 42 38 38 44 36', {
         fill: 'none',
-        stroke: '#ff9a5a',
-        'stroke-width': 2.2,
+        stroke: '#ff8246',
+        'stroke-width': 3,
         'stroke-linecap': 'round'
       }),
-      polygonShape('48,24 42,20 44,28', {
-        fill: '#ff8848',
-        stroke: '#ffd29a',
-        'stroke-width': 0.8
-      }),
-      pathShape('M46 40 C46 48 52 54 60 54', {
+      pathShape('M54 36 C48 42 42 46 36 50', {
         fill: 'none',
         stroke: '#ffe7b3',
-        'stroke-width': 1.6,
+        'stroke-width': 3,
         'stroke-linecap': 'round'
-      })
+      }),
+      // 雙星
+      starShape(28, 48, 5, 5, 2.5, {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1
+      }),
+      starShape(52, 38, 5, 5, 2.5, {
+        fill: '#ffe7b3',
+        stroke: '#ff8246',
+        'stroke-width': 1
+      }),
+      // 能量粒子
+      circleShape(36, 42, 2, { fill: '#ffad63', 'fill-opacity': 0.9 }),
+      circleShape(44, 44, 2, { fill: '#ffe7b3', 'fill-opacity': 0.9 }),
+      circleShape(40, 40, 1.5, { fill: '#ff5e3a', 'fill-opacity': 0.8 })
     ]
   },
   {
     id: 'meteor-dancer',
     element: 'fire',
     heroShapes: [
-      pathShape('M24 48 C28 34 40 30 56 28 L48 40 Z', {
-        fill: '#ff823f',
-        'fill-opacity': 0.7
+      // 舞者身軀（飄逸姿態）
+      pathShape('M34 46 L32 54 L36 58 L40 60 L44 58 L48 54 L44 46 L42 50 L38 50 Z', {
+        fill: '#ff8246',
+        stroke: '#ffd18c',
+        'stroke-width': 2,
+        'stroke-linejoin': 'round'
       }),
-      circleShape(50, 34, 7, {
-        fill: '#ffd38c',
-        stroke: '#ff9b52',
-        'stroke-width': 1.4
+      // 頭部
+      circleShape(40, 34, 5, {
+        fill: '#ffcf6f',
+        stroke: '#ff6433',
+        'stroke-width': 1.5
       }),
-      pathShape('M30 52 L36 46', {
+      // 頭髮（飄揚）
+      pathShape('M36 30 L32 26 L30 30 L32 34', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.3,
+        'stroke-linejoin': 'round'
+      }),
+      pathShape('M44 30 L48 26 L50 30 L48 34', {
+        fill: '#ff5e3a',
+        stroke: '#ffe7b3',
+        'stroke-width': 1.3,
+        'stroke-linejoin': 'round'
+      }),
+      // 眼睛
+      circleShape(37, 34, 1, { fill: '#ff5e3a' }),
+      circleShape(43, 34, 1, { fill: '#ff5e3a' }),
+      // 舞蹈飄帶（左）
+      pathShape('M32 48 C28 46 24 46 22 48 C24 44 26 42 30 42', {
         fill: 'none',
-        stroke: '#ffe0a6',
-        'stroke-width': 1.2,
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      pathShape('M34 56 L40 50', {
+      // 舞蹈飄帶（右）
+      pathShape('M48 48 C52 46 56 46 58 48 C56 44 54 42 50 42', {
         fill: 'none',
-        stroke: '#ffe0a6',
-        'stroke-width': 1.2,
+        stroke: '#ffe7b3',
+        'stroke-width': 2,
         'stroke-linecap': 'round'
       }),
-      starShape(32, 40, 4, 5, 2, {
-        fill: '#ffcf8f',
-        'fill-opacity': 0.7
+      // 流星軌跡
+      pathShape('M46 38 C48 36 50 34 52 32', {
+        fill: 'none',
+        stroke: '#ffad63',
+        'stroke-width': 1.5,
+        'stroke-linecap': 'round'
+      }),
+      starShape(52, 32, 4, 3, 1.5, {
+        fill: '#ffe7b3',
+        'fill-opacity': 0.9
+      }),
+      // 火焰粒子
+      circleShape(26, 44, 1.5, {
+        fill: '#ffad63',
+        'fill-opacity': 0.8
+      }),
+      circleShape(54, 44, 1.5, {
+        fill: '#ff5e3a',
+        'fill-opacity': 0.8
       })
     ],
     skillShapes: [
-      pathShape('M28 48 C28 36 42 32 52 38 C58 42 58 50 52 54 C46 58 36 56 32 48', {
+      // 流星步伐 - 流星軌跡
+      pathShape('M24 56 C30 48 36 42 44 36 C48 32 52 30 56 28', {
         fill: 'none',
-        stroke: '#ff9052',
-        'stroke-width': 2.4,
+        stroke: '#ffe7b3',
+        'stroke-width': 3.5,
         'stroke-linecap': 'round'
       }),
-      circleShape(48, 32, 7, {
+      pathShape('M26 56 C32 48 38 42 46 36 C50 32 54 30 58 28', {
         fill: 'none',
-        stroke: '#ffd9a2',
-        'stroke-width': 1.6
-      }),
-      pathShape('M48 25 L48 32 L54 32', {
-        fill: 'none',
-        stroke: '#ffd18c',
-        'stroke-width': 1.2,
+        stroke: '#ff8246',
+        'stroke-width': 2.5,
         'stroke-linecap': 'round'
       }),
-      circleShape(32, 54, 2.4, {
-        fill: '#ffe2a6'
-      })
+      // 流星
+      starShape(56, 30, 5, 5, 2.5, {
+        fill: '#ffe7b3',
+        stroke: '#ff8246',
+        'stroke-width': 1
+      }),
+      starShape(46, 38, 4, 4, 2, {
+        fill: '#ffad63',
+        'fill-opacity': 0.9
+      }),
+      starShape(34, 48, 4, 3.5, 1.5, {
+        fill: '#ff5e3a',
+        'fill-opacity': 0.8
+      }),
+      // 火焰尾跡
+      circleShape(28, 54, 2, { fill: '#ffad63', 'fill-opacity': 0.7 }),
+      circleShape(38, 44, 1.5, { fill: '#ffe7b3', 'fill-opacity': 0.7 })
     ]
   },
   // Water heroes
