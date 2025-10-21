@@ -1,3 +1,5 @@
+import { HERO_ART } from './art.js';
+
 const ROWS = 5;
 const COLS = 6;
 const TEAM_SIZE = 5;
@@ -304,6 +306,7 @@ function updatePlayerPanel() {
 }
 
 function defineHero(config) {
+  const art = HERO_ART[config.id] || {};
   return {
     id: config.id,
     name: config.name,
@@ -313,7 +316,9 @@ function defineHero(config) {
     skillName: config.skill.name,
     skillDescription: config.skill.description,
     skillCooldown: config.skill.cooldown,
-    useSkill: config.skill.effect
+    useSkill: config.skill.effect,
+    icon: art.hero || '',
+    skillIcon: art.skill || ''
   };
 }
 
@@ -1175,6 +1180,8 @@ function instantiateHero(data) {
     skillMax: data.skillCooldown,
     skillCharge: 0,
     onSkill: data.useSkill,
+    icon: data.icon,
+    skillIcon: data.skillIcon,
     cardElement: null,
     progressFill: null,
     skillButton: null
@@ -1205,7 +1212,15 @@ function createHeroCards() {
 
     const portrait = document.createElement("div");
     portrait.className = "hero-portrait";
-    portrait.style.background = getElementGradient(hero.element);
+    portrait.style.setProperty("--element-gradient", getElementGradient(hero.element));
+    if (hero.icon) {
+      portrait.innerHTML = hero.icon;
+    } else {
+      const fallback = document.createElement("span");
+      fallback.className = "hero-icon-fallback";
+      fallback.textContent = hero.name.slice(0, 2);
+      portrait.appendChild(fallback);
+    }
 
     const elementBadge = document.createElement("span");
     elementBadge.className = "hero-element";
@@ -1234,14 +1249,30 @@ function createHeroCards() {
 
     const button = document.createElement("button");
     button.className = "skill-button";
+    button.style.setProperty("--skill-gradient", getElementGradient(hero.element));
+    const iconWrapper = document.createElement("span");
+    iconWrapper.className = "skill-button-icon";
+    iconWrapper.style.setProperty("--element-gradient", getElementGradient(hero.element));
+    if (hero.skillIcon) {
+      iconWrapper.innerHTML = hero.skillIcon;
+    } else {
+      const iconFallback = document.createElement("span");
+      iconFallback.className = "skill-icon-fallback";
+      iconFallback.textContent = hero.skillName.charAt(0);
+      iconWrapper.appendChild(iconFallback);
+    }
+    const textWrap = document.createElement("span");
+    textWrap.className = "skill-button-text";
     const title = document.createElement("span");
     title.className = "skill-button-title";
     title.textContent = hero.skillName;
     const desc = document.createElement("span");
     desc.className = "skill-button-desc";
     desc.textContent = `CD ${hero.skillMax}｜${hero.skillDescription}`;
-    button.appendChild(title);
-    button.appendChild(desc);
+    textWrap.appendChild(title);
+    textWrap.appendChild(desc);
+    button.appendChild(iconWrapper);
+    button.appendChild(textWrap);
     button.disabled = true;
     button.addEventListener("click", () => {
       if (isResolving || dragState || hero.skillCharge < hero.skillMax || isGameOver) {
@@ -2081,13 +2112,59 @@ function renderTeamSelection() {
     const heroId = teamSelection[i];
     if (heroId) {
       const heroData = heroIndex[heroId];
+      const top = document.createElement('div');
+      top.className = 'team-slot-top';
+
+      const portrait = document.createElement('div');
+      portrait.className = 'team-slot-icon';
+      portrait.style.setProperty('--element-gradient', getElementGradient(heroData.element));
+      if (heroData.icon) {
+        portrait.innerHTML = heroData.icon;
+      } else {
+        const fallback = document.createElement('span');
+        fallback.className = 'hero-icon-fallback';
+        fallback.textContent = heroData.name.slice(0, 2);
+        portrait.appendChild(fallback);
+      }
+
+      const details = document.createElement('div');
+      details.className = 'team-slot-details';
+
       const name = document.createElement('h4');
       name.textContent = heroData.name;
+
       const meta = document.createElement('p');
-      meta.textContent = `${ELEMENT_MAP[heroData.element]} ｜ 攻擊 ${formatNumber(heroData.attack)}`;
-      const info = document.createElement('p');
-      info.className = 'team-slot-skill';
-      info.textContent = `${heroData.skillName}：${heroData.skillDescription}`;
+      meta.className = 'team-slot-meta';
+      meta.textContent = `${ELEMENT_MAP[heroData.element]} ｜ 稀有度 ${'★'.repeat(heroData.rarity)} ｜ 攻擊 ${formatNumber(heroData.attack)} ｜ CD ${heroData.skillCooldown}`;
+
+      const skillRow = document.createElement('div');
+      skillRow.className = 'team-slot-skill';
+      const skillIcon = document.createElement('span');
+      skillIcon.className = 'team-slot-skill-icon';
+      skillIcon.style.setProperty('--element-gradient', getElementGradient(heroData.element));
+      if (heroData.skillIcon) {
+        skillIcon.innerHTML = heroData.skillIcon;
+      } else {
+        const iconFallback = document.createElement('span');
+        iconFallback.className = 'skill-icon-fallback';
+        iconFallback.textContent = heroData.skillName.charAt(0);
+        skillIcon.appendChild(iconFallback);
+      }
+      const skillText = document.createElement('p');
+      skillText.className = 'team-slot-skill-text';
+      skillText.textContent = `${heroData.skillName}：${heroData.skillDescription}`;
+      skillRow.appendChild(skillIcon);
+      skillRow.appendChild(skillText);
+
+      details.appendChild(name);
+      details.appendChild(meta);
+      details.appendChild(skillRow);
+
+      top.appendChild(portrait);
+      top.appendChild(details);
+
+      slot.appendChild(top);
+
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'team-slot-remove';
@@ -2097,9 +2174,6 @@ function renderTeamSelection() {
         renderTeamSelection();
         renderCollectionGrid();
       });
-      slot.appendChild(name);
-      slot.appendChild(meta);
-      slot.appendChild(info);
       slot.appendChild(remove);
     } else {
       slot.classList.add('empty');
@@ -2131,6 +2205,18 @@ function renderCollectionGrid() {
     header.appendChild(name);
     header.appendChild(stars);
 
+    const portrait = document.createElement('div');
+    portrait.className = 'collection-portrait';
+    portrait.style.setProperty('--element-gradient', getElementGradient(hero.element));
+    if (hero.icon) {
+      portrait.innerHTML = hero.icon;
+    } else {
+      const fallback = document.createElement('span');
+      fallback.className = 'hero-icon-fallback';
+      fallback.textContent = hero.name.slice(0, 2);
+      portrait.appendChild(fallback);
+    }
+
     const elementBadge = document.createElement('span');
     elementBadge.className = 'collection-element';
     elementBadge.textContent = ELEMENT_MAP[hero.element];
@@ -2139,9 +2225,24 @@ function renderCollectionGrid() {
     attack.className = 'collection-attack';
     attack.textContent = `攻擊 ${formatNumber(hero.attack)} ｜ CD ${hero.skillCooldown}`;
 
-    const skill = document.createElement('p');
+    const skill = document.createElement('div');
     skill.className = 'collection-skill';
-    skill.textContent = `${hero.skillName}：${hero.skillDescription}`;
+    const skillIcon = document.createElement('span');
+    skillIcon.className = 'collection-skill-icon';
+    skillIcon.style.setProperty('--element-gradient', getElementGradient(hero.element));
+    if (hero.skillIcon) {
+      skillIcon.innerHTML = hero.skillIcon;
+    } else {
+      const iconFallback = document.createElement('span');
+      iconFallback.className = 'skill-icon-fallback';
+      iconFallback.textContent = hero.skillName.charAt(0);
+      skillIcon.appendChild(iconFallback);
+    }
+    const skillText = document.createElement('p');
+    skillText.className = 'collection-skill-text';
+    skillText.textContent = `${hero.skillName}：${hero.skillDescription}`;
+    skill.appendChild(skillIcon);
+    skill.appendChild(skillText);
 
     const action = document.createElement('button');
     action.type = 'button';
@@ -2167,6 +2268,7 @@ function renderCollectionGrid() {
     }
 
     card.appendChild(header);
+    card.appendChild(portrait);
     card.appendChild(elementBadge);
     card.appendChild(attack);
     card.appendChild(skill);
