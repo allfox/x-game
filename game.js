@@ -51,7 +51,7 @@ const teamStage = document.getElementById("team-stage");
 const teamStageCloseButton = document.getElementById("team-stage-close");
 const boardElement = document.getElementById("board");
 const heroesContainer = document.getElementById("heroes");
-const skillButtonsContainer = document.getElementById("skill-buttons");
+const heroDetailPanel = document.getElementById("hero-detail");
 const enemyHpBar = document.getElementById("enemy-hp");
 const enemyHpText = document.getElementById("enemy-hp-text");
 const enemyCountdownText = document.getElementById("enemy-countdown");
@@ -83,6 +83,8 @@ const logHistory = [];
 let activeHeroes = [];
 let teamSelection = [];
 let hasBattleStarted = false;
+let selectedHero = null;
+let heroDetailElements = null;
 
 const ACTIVE_BOSS_ID = "void-arbiter";
 if (bossPortraitElement && BOSS_ART[ACTIVE_BOSS_ID]) {
@@ -1191,35 +1193,27 @@ function instantiateHero(data) {
     icon: data.icon,
     skillIcon: data.skillIcon,
     cardElement: null,
-    progressFill: null,
-    skillButton: null
+    progressFill: null
   };
 }
 function createHeroCards() {
+  if (!heroesContainer) return;
   heroesContainer.innerHTML = "";
-  skillButtonsContainer.innerHTML = "";
 
   activeHeroes.forEach(hero => {
-    const card = document.createElement("article");
-    card.className = "hero-card";
-    card.dataset.element = hero.element;
+    const avatar = document.createElement("button");
+    avatar.type = "button";
+    avatar.className = "hero-avatar";
+    avatar.dataset.element = hero.element;
+    avatar.style.setProperty("--element-gradient", getElementGradient(hero.element));
+    avatar.title = `${hero.name}｜${ELEMENT_MAP[hero.element]}`;
+    avatar.setAttribute(
+      "aria-label",
+      `${hero.name}（${ELEMENT_MAP[hero.element]}）技能冷卻 ${hero.skillCharge}/${hero.skillMax}`
+    );
 
-    const header = document.createElement("div");
-    header.className = "hero-header";
-
-    const name = document.createElement("h3");
-    name.className = "hero-name";
-    name.textContent = hero.name;
-
-    const stars = document.createElement("div");
-    stars.className = "hero-rarity";
-    stars.textContent = "★".repeat(hero.rarity);
-
-    header.appendChild(name);
-    header.appendChild(stars);
-
-    const portrait = document.createElement("div");
-    portrait.className = "hero-portrait";
+    const portrait = document.createElement("span");
+    portrait.className = "hero-avatar-portrait";
     portrait.style.setProperty("--element-gradient", getElementGradient(hero.element));
     if (hero.icon) {
       portrait.innerHTML = hero.icon;
@@ -1230,94 +1224,245 @@ function createHeroCards() {
       portrait.appendChild(fallback);
     }
 
-    const elementBadge = document.createElement("span");
-    elementBadge.className = "hero-element";
-    elementBadge.textContent = ELEMENT_MAP[hero.element];
+    const cooldown = document.createElement("span");
+    cooldown.className = "hero-avatar-cd";
+    const cooldownFill = document.createElement("span");
+    cooldownFill.className = "hero-avatar-cd-fill";
+    cooldown.appendChild(cooldownFill);
 
-    const attack = document.createElement("div");
-    attack.className = "hero-attack";
-    attack.textContent = `攻擊 ${formatNumber(hero.attack)}`;
+    avatar.appendChild(portrait);
+    avatar.appendChild(cooldown);
 
-    const progress = document.createElement("div");
-    progress.className = "skill-progress";
-    const progressFill = document.createElement("div");
-    progressFill.className = "skill-progress-fill";
-    progress.appendChild(progressFill);
-
-    card.appendChild(header);
-    card.appendChild(portrait);
-    card.appendChild(elementBadge);
-    card.appendChild(attack);
-    card.appendChild(progress);
-
-    hero.cardElement = card;
-    hero.progressFill = progressFill;
-
-    heroesContainer.appendChild(card);
-
-    const button = document.createElement("button");
-    button.className = "skill-button";
-    button.style.setProperty("--skill-gradient", getElementGradient(hero.element));
-    const iconWrapper = document.createElement("span");
-    iconWrapper.className = "skill-button-icon";
-    iconWrapper.style.setProperty("--element-gradient", getElementGradient(hero.element));
-    if (hero.skillIcon) {
-      iconWrapper.innerHTML = hero.skillIcon;
-    } else {
-      const iconFallback = document.createElement("span");
-      iconFallback.className = "skill-icon-fallback";
-      iconFallback.textContent = hero.skillName.charAt(0);
-      iconWrapper.appendChild(iconFallback);
-    }
-    const textWrap = document.createElement("span");
-    textWrap.className = "skill-button-text";
-    const title = document.createElement("span");
-    title.className = "skill-button-title";
-    title.textContent = hero.skillName;
-    const desc = document.createElement("span");
-    desc.className = "skill-button-desc";
-    desc.textContent = `CD ${hero.skillMax}｜${hero.skillDescription}`;
-    textWrap.appendChild(title);
-    textWrap.appendChild(desc);
-    button.appendChild(iconWrapper);
-    button.appendChild(textWrap);
-    button.disabled = true;
-    button.addEventListener("click", () => {
-      if (isResolving || dragState || hero.skillCharge < hero.skillMax || isGameOver) {
-        return;
-      }
-      hero.skillCharge = 0;
-      hero.onSkill(hero);
-      updateHeroUI();
-      updateSkillButtons();
-      renderBoard();
-      updatePlayerPanel();
-      updateEnemyPanel();
+    avatar.addEventListener("click", () => {
+      showHeroDetail(hero);
     });
-    hero.skillButton = button;
-    skillButtonsContainer.appendChild(button);
+
+    hero.cardElement = avatar;
+    hero.progressFill = cooldownFill;
+
+    heroesContainer.appendChild(avatar);
   });
+
+  updateHeroUI();
+  updateHeroDetailUI();
+}
+
+function clearHeroDetail() {
+  if (!heroDetailPanel) return;
+  selectedHero = null;
+  heroDetailElements = null;
+  heroDetailPanel.innerHTML = "";
+  heroDetailPanel.classList.add("empty");
+  heroDetailPanel.classList.remove("ready");
+  heroDetailPanel.removeAttribute("data-element");
+  heroDetailPanel.style.removeProperty("--element-gradient");
+  const placeholder = document.createElement("p");
+  placeholder.className = "hero-detail-placeholder";
+  placeholder.textContent = "點選英雄頭像以查看詳情。";
+  heroDetailPanel.appendChild(placeholder);
+  activeHeroes.forEach(hero => {
+    if (hero.cardElement) {
+      hero.cardElement.classList.remove("selected");
+    }
+  });
+}
+
+function showHeroDetail(hero) {
+  if (!heroDetailPanel) return;
+  selectedHero = hero;
+  heroDetailPanel.classList.remove("empty");
+  heroDetailPanel.innerHTML = "";
+  heroDetailPanel.dataset.element = hero.element;
+  heroDetailPanel.style.setProperty("--element-gradient", getElementGradient(hero.element));
+
+  activeHeroes.forEach(current => {
+    if (current.cardElement) {
+      current.cardElement.classList.toggle("selected", current === hero);
+    }
+  });
+
+  const header = document.createElement("div");
+  header.className = "hero-detail-header";
+
+  const portrait = document.createElement("div");
+  portrait.className = "hero-detail-portrait";
+  portrait.style.setProperty("--element-gradient", getElementGradient(hero.element));
+  if (hero.icon) {
+    portrait.innerHTML = hero.icon;
+  } else {
+    const fallback = document.createElement("span");
+    fallback.className = "hero-icon-fallback";
+    fallback.textContent = hero.name.slice(0, 2);
+    portrait.appendChild(fallback);
+  }
+
+  const info = document.createElement("div");
+  info.className = "hero-detail-info";
+
+  const topline = document.createElement("div");
+  topline.className = "hero-detail-topline";
+  const name = document.createElement("h4");
+  name.className = "hero-detail-name";
+  name.textContent = hero.name;
+  const rarity = document.createElement("span");
+  rarity.className = "hero-detail-rarity";
+  rarity.textContent = "★".repeat(hero.rarity);
+  topline.appendChild(name);
+  topline.appendChild(rarity);
+
+  const meta = document.createElement("div");
+  meta.className = "hero-detail-meta";
+  const element = document.createElement("span");
+  element.className = "hero-detail-element";
+  element.textContent = ELEMENT_MAP[hero.element];
+  const attack = document.createElement("span");
+  attack.className = "hero-detail-attack";
+  meta.appendChild(element);
+  meta.appendChild(attack);
+
+  info.appendChild(topline);
+  info.appendChild(meta);
+
+  header.appendChild(portrait);
+  header.appendChild(info);
+
+  const skillRow = document.createElement("div");
+  skillRow.className = "hero-detail-skill";
+  const skillIcon = document.createElement("span");
+  skillIcon.className = "hero-detail-skill-icon";
+  skillIcon.style.setProperty("--element-gradient", getElementGradient(hero.element));
+  if (hero.skillIcon) {
+    skillIcon.innerHTML = hero.skillIcon;
+  } else {
+    const iconFallback = document.createElement("span");
+    iconFallback.className = "skill-icon-fallback";
+    iconFallback.textContent = hero.skillName.charAt(0);
+    skillIcon.appendChild(iconFallback);
+  }
+  const skillInfo = document.createElement("div");
+  skillInfo.className = "hero-detail-skill-info";
+  const skillName = document.createElement("p");
+  skillName.className = "hero-detail-skill-name";
+  skillName.textContent = hero.skillName;
+  const skillDesc = document.createElement("p");
+  skillDesc.className = "hero-detail-skill-desc";
+  skillDesc.textContent = hero.skillDescription;
+  skillInfo.appendChild(skillName);
+  skillInfo.appendChild(skillDesc);
+  skillRow.appendChild(skillIcon);
+  skillRow.appendChild(skillInfo);
+
+  const progress = document.createElement("div");
+  progress.className = "hero-detail-progress";
+  const progressBar = document.createElement("div");
+  progressBar.className = "hero-detail-progress-bar";
+  const progressFill = document.createElement("div");
+  progressFill.className = "hero-detail-progress-fill";
+  progressBar.appendChild(progressFill);
+  const cooldown = document.createElement("span");
+  cooldown.className = "hero-detail-cooldown";
+  progress.appendChild(progressBar);
+  progress.appendChild(cooldown);
+
+  const action = document.createElement("button");
+  action.type = "button";
+  action.className = "hero-detail-action";
+  action.textContent = "發動技能";
+  action.addEventListener("click", () => {
+    useHeroSkill(hero);
+  });
+
+  heroDetailPanel.appendChild(header);
+  heroDetailPanel.appendChild(skillRow);
+  heroDetailPanel.appendChild(progress);
+  heroDetailPanel.appendChild(action);
+
+  heroDetailElements = {
+    name,
+    rarity,
+    element,
+    attack,
+    skillName,
+    skillDesc,
+    cooldown,
+    progressFill,
+    actionButton: action
+  };
+
+  updateHeroDetailUI();
+}
+
+function canUseHeroSkill(hero) {
+  if (!hero) return false;
+  if (isResolving || dragState || isGameOver) return false;
+  return hero.skillCharge >= hero.skillMax;
+}
+
+function useHeroSkill(hero) {
+  if (!canUseHeroSkill(hero)) {
+    return;
+  }
+  hero.skillCharge = 0;
+  hero.onSkill(hero);
+  updateHeroUI();
+  updateHeroDetailUI();
+  renderBoard();
+  updatePlayerPanel();
+  updateEnemyPanel();
 }
 
 function updateHeroUI() {
   activeHeroes.forEach(hero => {
-    const ratio = hero.skillCharge / hero.skillMax;
+    const ratio = hero.skillMax > 0 ? hero.skillCharge / hero.skillMax : 1;
     if (hero.progressFill) {
       hero.progressFill.style.width = `${Math.min(1, ratio) * 100}%`;
     }
     if (hero.cardElement) {
       hero.cardElement.classList.toggle("ready", ratio >= 1);
+      hero.cardElement.classList.toggle("selected", selectedHero === hero);
+      hero.cardElement.setAttribute(
+        "aria-label",
+        `${hero.name}（${ELEMENT_MAP[hero.element]}）技能冷卻 ${hero.skillCharge}/${hero.skillMax}`
+      );
     }
   });
 }
 
-function updateSkillButtons() {
-  activeHeroes.forEach(hero => {
-    if (hero.skillButton) {
-      hero.skillButton.disabled =
-        hero.skillCharge < hero.skillMax || isResolving || !!dragState || isGameOver;
-    }
-  });
+function updateHeroDetailUI() {
+  if (!heroDetailPanel) return;
+  if (!selectedHero || !heroDetailElements) {
+    heroDetailPanel.classList.remove("ready");
+    return;
+  }
+
+  if (!activeHeroes.includes(selectedHero)) {
+    clearHeroDetail();
+    return;
+  }
+
+  const hero = selectedHero;
+  heroDetailPanel.dataset.element = hero.element;
+  heroDetailPanel.style.setProperty("--element-gradient", getElementGradient(hero.element));
+
+  heroDetailElements.name.textContent = hero.name;
+  heroDetailElements.rarity.textContent = "★".repeat(hero.rarity);
+  heroDetailElements.element.textContent = ELEMENT_MAP[hero.element];
+  heroDetailElements.attack.textContent = `攻擊 ${formatNumber(hero.attack)}`;
+  heroDetailElements.skillName.textContent = hero.skillName;
+  heroDetailElements.skillDesc.textContent = hero.skillDescription;
+
+  const ratio = hero.skillMax > 0 ? hero.skillCharge / hero.skillMax : 1;
+  heroDetailElements.progressFill.style.width = `${Math.min(1, ratio) * 100}%`;
+  const remaining = Math.max(0, hero.skillMax - hero.skillCharge);
+  heroDetailElements.cooldown.textContent =
+    ratio >= 1
+      ? "技能已就緒"
+      : `冷卻 ${hero.skillCharge}/${hero.skillMax}（剩餘 ${remaining}）`;
+
+  const usable = canUseHeroSkill(hero);
+  heroDetailElements.actionButton.disabled = !usable;
+  heroDetailElements.actionButton.setAttribute("aria-disabled", usable ? "false" : "true");
+  heroDetailPanel.classList.toggle("ready", hero.skillCharge >= hero.skillMax);
 }
 
 function getCellFromEvent(event) {
@@ -1357,7 +1502,7 @@ function handlePointerDown(event) {
   boardElement.classList.add("dragging");
   boardElement.setPointerCapture(event.pointerId);
   renderBoard();
-  updateSkillButtons();
+  updateHeroDetailUI();
   updatePlayerPanel();
   startMoveTimer(duration);
 }
@@ -1432,14 +1577,14 @@ function endDrag() {
   boardElement.classList.remove("dragging");
   cancelMoveTimer();
   renderBoard();
-  updateSkillButtons();
+  updateHeroDetailUI();
   resolveBoard();
 }
 
 async function resolveBoard() {
   if (isResolving) return;
   isResolving = true;
-  updateSkillButtons();
+  updateHeroDetailUI();
 
   let totalCombos = 0;
   let totalCascades = 0;
@@ -1481,7 +1626,7 @@ async function resolveBoard() {
   }
 
   updateHeroUI();
-  updateSkillButtons();
+  updateHeroDetailUI();
   updatePlayerPanel();
   updateEnemyPanel();
 
@@ -1490,7 +1635,7 @@ async function resolveBoard() {
   }
 
   isResolving = false;
-  updateSkillButtons();
+  updateHeroDetailUI();
   updatePlayerPanel();
   updateEnemyPanel();
 }
@@ -2095,7 +2240,7 @@ function resetGame() {
   cancelMoveTimer();
   renderBoard();
   updateHeroUI();
-  updateSkillButtons();
+  updateHeroDetailUI();
   updatePlayerPanel();
   updateEnemyPanel();
   logMessage('戰鬥開始！拖曳符石創造最大連鎖。');
@@ -2321,6 +2466,7 @@ function applyTeamSelection() {
 function setActiveHeroes(heroIds) {
   activeHeroes = heroIds.map(id => instantiateHero(heroIndex[id]));
   createHeroCards();
+  clearHeroDetail();
 }
 
 boardElement.addEventListener('pointerdown', handlePointerDown);
