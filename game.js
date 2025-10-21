@@ -1,4 +1,4 @@
-import { HERO_ART } from './art.js';
+import { HERO_ART, BOSS_ART } from './art.js';
 
 const ROWS = 5;
 const COLS = 6;
@@ -46,6 +46,9 @@ const ENEMY_PHASES = [
   }
 ];
 
+const battleScreen = document.getElementById("battle-screen");
+const teamStage = document.getElementById("team-stage");
+const teamStageCloseButton = document.getElementById("team-stage-close");
 const boardElement = document.getElementById("board");
 const heroesContainer = document.getElementById("heroes");
 const skillButtonsContainer = document.getElementById("skill-buttons");
@@ -54,6 +57,7 @@ const enemyHpText = document.getElementById("enemy-hp-text");
 const enemyCountdownText = document.getElementById("enemy-countdown");
 const enemyStatusText = document.getElementById("enemy-status");
 const enemyNameText = document.getElementById("enemy-name");
+const bossPortraitElement = document.getElementById("boss-portrait");
 const playerHpBar = document.getElementById("player-hp");
 const playerHpText = document.getElementById("player-hp-text");
 const playerStatusText = document.getElementById("player-status");
@@ -64,8 +68,6 @@ const overlayTitle = document.getElementById("overlay-title");
 const overlayMessage = document.getElementById("overlay-message");
 const restartButton = document.getElementById("restart-button");
 const openTeamButton = document.getElementById("open-team");
-const teamModal = document.getElementById("team-modal");
-const closeTeamButton = document.getElementById("close-team");
 const teamSelectedContainer = document.getElementById("team-selected");
 const collectionGrid = document.getElementById("collection-grid");
 const teamMessage = document.getElementById("team-message");
@@ -80,6 +82,12 @@ let moveDeadline = null;
 const logHistory = [];
 let activeHeroes = [];
 let teamSelection = [];
+let hasBattleStarted = false;
+
+const ACTIVE_BOSS_ID = "void-arbiter";
+if (bossPortraitElement && BOSS_ART[ACTIVE_BOSS_ID]) {
+  bossPortraitElement.innerHTML = BOSS_ART[ACTIVE_BOSS_ID];
+}
 
 const playerState = {
   maxHp: 24000,
@@ -2093,15 +2101,33 @@ function resetGame() {
   logMessage('戰鬥開始！拖曳符石創造最大連鎖。');
   logMessage(ENEMY_PHASES[0].announcement);
 }
-function openTeamBuilder() {
-  teamSelection = activeHeroes.map(hero => hero.id);
-  renderTeamSelection();
-  renderCollectionGrid();
-  teamModal.classList.remove('hidden');
+function showTeamStage(mode = "overlay") {
+  if (!teamStage) return;
+  if (mode === "initial") {
+    teamStage.classList.add("initial");
+  } else {
+    teamStage.classList.remove("initial");
+  }
+  teamStage.classList.add("visible");
 }
 
-function closeTeamBuilder() {
-  teamModal.classList.add('hidden');
+function hideTeamStage() {
+  if (!teamStage) return;
+  teamStage.classList.remove("visible");
+}
+
+function openTeamBuilder(options = {}) {
+  if (isResolving) return;
+  const mode = options.mode || (hasBattleStarted ? "overlay" : "initial");
+  if (activeHeroes.length > 0) {
+    teamSelection = activeHeroes.map(hero => hero.id);
+  }
+  renderTeamSelection();
+  renderCollectionGrid();
+  applyTeamButton.textContent = hasBattleStarted
+    ? "套用隊伍並重新挑戰"
+    : "確認隊伍並進入戰鬥";
+  showTeamStage(mode);
 }
 
 function renderTeamSelection() {
@@ -2283,7 +2309,12 @@ function applyTeamSelection() {
     return;
   }
   setActiveHeroes(teamSelection);
-  closeTeamBuilder();
+  if (!hasBattleStarted) {
+    hasBattleStarted = true;
+    battleScreen.classList.remove('hidden');
+    teamStage.classList.remove('initial');
+  }
+  hideTeamStage();
   resetGame();
 }
 
@@ -2310,20 +2341,38 @@ document.addEventListener('visibilitychange', () => {
 });
 
 openTeamButton.addEventListener('click', () => {
-  if (isResolving) return;
-  openTeamBuilder();
+  if (isResolving || !hasBattleStarted) return;
+  openTeamBuilder({ mode: 'overlay' });
 });
 
-closeTeamButton.addEventListener('click', closeTeamBuilder);
-teamModal.addEventListener('click', event => {
-  if (event.target === teamModal) {
-    closeTeamBuilder();
+if (teamStageCloseButton) {
+  teamStageCloseButton.addEventListener('click', () => {
+    if (!hasBattleStarted) return;
+    hideTeamStage();
+  });
+}
+
+if (teamStage) {
+  teamStage.addEventListener('click', event => {
+    if (event.target === teamStage && hasBattleStarted) {
+      hideTeamStage();
+    }
+  });
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && hasBattleStarted && teamStage?.classList.contains('visible')) {
+    hideTeamStage();
   }
 });
 
 applyTeamButton.addEventListener('click', applyTeamSelection);
-restartButton.addEventListener('click', resetGame);
+restartButton.addEventListener('click', () => {
+  if (hasBattleStarted) {
+    resetGame();
+  }
+});
 
 const initialTeam = HERO_LIBRARY.slice(0, TEAM_SIZE).map(hero => hero.id);
-setActiveHeroes(initialTeam);
-resetGame();
+teamSelection = [...initialTeam];
+openTeamBuilder({ mode: 'initial' });
