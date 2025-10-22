@@ -1,4 +1,5 @@
 import { HERO_ART, BOSS_ART } from './art.js';
+import { WORLD_LORE, HERO_LORE, STORY_CAMPAIGN } from './lore.js';
 
 const ROWS = 5;
 const COLS = 6;
@@ -19,32 +20,19 @@ const ELEMENT_MAP = ORB_TYPES.reduce((acc, orb) => {
   return acc;
 }, {});
 
-const ENEMY_PHASES = [
-  {
-    threshold: 1,
-    shieldElement: "fire",
-    shieldReduction: 0.35,
-    attack: 3600,
-    countdownMax: 2,
-    announcement: "虛空審判者展開熾焰護盾，審判開始！"
-  },
-  {
-    threshold: 0.6,
-    shieldElement: "dark",
-    shieldReduction: 0.45,
-    attack: 3900,
-    countdownMax: 2,
-    announcement: "虛空審判者轉化為暗影相位，攻勢與護盾同時增強！"
-  },
-  {
-    threshold: 0.3,
-    shieldElement: "light",
-    shieldReduction: 0.2,
-    attack: 4600,
-    countdownMax: 1,
-    announcement: "審判者狂怒暴走，倒數加快，光壁鎧甲覆體！"
-  }
-];
+const DIFFICULTY_LABELS = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ'];
+
+const stageIndex = STORY_CAMPAIGN.reduce((acc, stage) => {
+  acc[stage.id] = stage;
+  return acc;
+}, {});
+
+let selectedStageId = STORY_CAMPAIGN[0]?.id || null;
+let activeStage = selectedStageId ? stageIndex[selectedStageId] : null;
+let enemyPhases = activeStage?.enemy?.phases
+  ? activeStage.enemy.phases.map(phase => ({ ...phase }))
+  : [];
+
 
 const battleScreen = document.getElementById("battle-screen");
 const teamStage = document.getElementById("team-stage");
@@ -75,6 +63,21 @@ const teamMessage = document.getElementById("team-message");
 const applyTeamButton = document.getElementById("apply-team");
 const sidebarPanel = document.getElementById("sidebar-panel");
 const toggleSidebarButton = document.getElementById("toggle-sidebar");
+const worldSummaryElement = document.getElementById("world-summary");
+const worldPillarsList = document.getElementById("world-pillars");
+const worldFactionsList = document.getElementById("world-factions");
+const storyIntroText = document.getElementById("story-intro");
+const storyStageList = document.getElementById("story-stage-list");
+const storyStageChapter = document.getElementById("story-stage-chapter");
+const storyDetailTitle = document.getElementById("story-detail-title");
+const storyDetailSummary = document.getElementById("story-detail-summary");
+const storyStageRecommend = document.getElementById("story-stage-recommend");
+const storyStageDifficulty = document.getElementById("story-stage-difficulty");
+const storyStageVisual = document.getElementById("story-stage-visual");
+const storyBossPersona = document.getElementById("story-boss-persona");
+const storyBossStory = document.getElementById("story-boss-story");
+const storyBossQuote = document.getElementById("story-boss-quote");
+const storyStageObjectives = document.getElementById("story-stage-objectives");
 const mobileSidebarMedia =
   typeof window.matchMedia === "function"
     ? window.matchMedia("(max-width: 480px)")
@@ -119,11 +122,6 @@ function syncSidebarForViewport() {
   applySidebarVisibility(!mobileSidebarMedia.matches);
 }
 
-const ACTIVE_BOSS_ID = "void-arbiter";
-if (bossPortraitElement && BOSS_ART[ACTIVE_BOSS_ID]) {
-  bossPortraitElement.innerHTML = BOSS_ART[ACTIVE_BOSS_ID];
-}
-
 const playerState = {
   maxHp: 24000,
   hp: 24000,
@@ -139,14 +137,18 @@ const playerState = {
 };
 
 const enemyState = {
-  name: "虛空審判者",
-  maxHp: 42000,
-  hp: 42000,
-  attack: 3600,
-  countdown: 2,
-  countdownMax: 2,
-  shieldElement: "fire",
-  shieldReduction: 0.35,
+  id: '',
+  title: '',
+  name: '',
+  shortName: '',
+  displayName: '',
+  maxHp: 0,
+  hp: 0,
+  attack: 0,
+  countdown: 0,
+  countdownMax: 0,
+  shieldElement: null,
+  shieldReduction: 0,
   weakenTurns: 0,
   weakenValue: 0,
   dotEffects: [],
@@ -154,7 +156,13 @@ const enemyState = {
   countdownDelay: 0,
   armorBreakTurns: 0,
   armorBreakValue: 0,
-  phaseIndex: 0
+  phaseIndex: 0,
+  attackMessage: '',
+  victoryLog: '',
+  victoryOverlay: '',
+  defeatOverlay: '',
+  defeatLog: '',
+  openingNarration: ''
 };
 
 function formatNumber(num) {
@@ -177,6 +185,340 @@ function getElementGradient(element) {
       return "linear-gradient(135deg, #ff9ac9, #ff4f9b)";
     default:
       return "linear-gradient(135deg, #999, #555)";
+  }
+}
+
+function getStageContext() {
+  return {
+    realm: WORLD_LORE.realmName,
+    stageTitle: activeStage?.title || '',
+    stageChapter: activeStage?.chapter || '',
+    enemyDisplay: enemyState.displayName || enemyState.name || '敵人',
+    enemyTitle: enemyState.title || enemyState.displayName || '敵人',
+    enemyName: enemyState.shortName || enemyState.displayName || '敵人',
+    playerTeam: WORLD_LORE.heroGuild
+  };
+}
+
+function formatBattleText(template, extra = {}) {
+  if (!template) return '';
+  const context = { ...getStageContext(), ...extra };
+  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => {
+    const value = context[key];
+    return value !== undefined ? value : '';
+  });
+}
+
+function assignText(element, text) {
+  if (!element) return;
+  if (text) {
+    element.textContent = text;
+    element.hidden = false;
+  } else {
+    element.textContent = '';
+    element.hidden = true;
+  }
+}
+
+function renderWorldLore() {
+  if (worldSummaryElement) {
+    assignText(worldSummaryElement, WORLD_LORE.summary);
+  }
+
+  if (worldPillarsList) {
+    worldPillarsList.innerHTML = '';
+    (WORLD_LORE.pillars || []).forEach(pillar => {
+      const item = document.createElement('li');
+      if (pillar.name) {
+        const name = document.createElement('strong');
+        name.textContent = pillar.name;
+        item.appendChild(name);
+      }
+      if (pillar.detail) {
+        const detail = document.createElement('span');
+        detail.textContent = pillar.detail;
+        item.appendChild(detail);
+      }
+      worldPillarsList.appendChild(item);
+    });
+  }
+
+  if (worldFactionsList) {
+    worldFactionsList.innerHTML = '';
+    (WORLD_LORE.factions || []).forEach(faction => {
+      const item = document.createElement('li');
+      if (faction.name) {
+        const name = document.createElement('strong');
+        name.textContent = faction.name;
+        item.appendChild(name);
+      }
+      if (faction.detail) {
+        const detail = document.createElement('span');
+        detail.textContent = faction.detail;
+        item.appendChild(detail);
+      }
+      worldFactionsList.appendChild(item);
+    });
+  }
+
+  if (storyIntroText) {
+    assignText(storyIntroText, WORLD_LORE.storyIntro);
+  }
+}
+
+function updateBossPortrait(artId) {
+  if (!bossPortraitElement) return;
+  bossPortraitElement.innerHTML = '';
+  if (artId && BOSS_ART[artId]) {
+    bossPortraitElement.innerHTML = BOSS_ART[artId];
+    return;
+  }
+  if (enemyState.displayName) {
+    const fallback = document.createElement('span');
+    fallback.textContent = enemyState.displayName;
+    bossPortraitElement.appendChild(fallback);
+  }
+}
+
+function configureStage(stage) {
+  if (!stage || !stage.enemy) {
+    enemyPhases = [];
+    enemyState.id = '';
+    enemyState.title = '';
+    enemyState.name = '';
+    enemyState.shortName = '';
+    enemyState.displayName = '';
+    enemyState.maxHp = 0;
+    enemyState.hp = 0;
+    enemyState.attack = 0;
+    enemyState.countdown = 0;
+    enemyState.countdownMax = 0;
+    enemyState.shieldElement = null;
+    enemyState.shieldReduction = 0;
+    enemyState.weakenTurns = 0;
+    enemyState.weakenValue = 0;
+    enemyState.dotEffects = [];
+    enemyState.actionLockTurns = 0;
+    enemyState.countdownDelay = 0;
+    enemyState.armorBreakTurns = 0;
+    enemyState.armorBreakValue = 0;
+    enemyState.phaseIndex = 0;
+    enemyState.attackMessage = '';
+    enemyState.victoryLog = '';
+    enemyState.victoryOverlay = '';
+    enemyState.defeatOverlay = '';
+    enemyState.defeatLog = '';
+    enemyState.openingNarration = '';
+    updateBossPortrait(null);
+    updateEnemyPanel();
+    return;
+  }
+
+  enemyPhases = stage.enemy?.phases
+    ? stage.enemy.phases.map(phase => ({ ...phase }))
+    : [];
+
+  const enemy = stage.enemy;
+  enemyState.id = enemy.id || stage.id || '';
+  enemyState.title = enemy.title || '';
+  enemyState.name = enemy.name || enemy.displayName || enemy.title || '';
+  enemyState.shortName = enemy.name || enemy.title || enemy.displayName || enemyState.name;
+  enemyState.displayName = enemy.displayName || enemy.title || enemy.name || enemyState.name;
+  enemyState.maxHp = enemy.maxHp || 0;
+  enemyState.hp = enemyState.maxHp;
+  enemyState.attackMessage = enemy.attackMessage || '{enemyDisplay}造成{damage}傷害！';
+  enemyState.victoryLog = enemy.victoryLog || '{enemyDisplay}倒下，守護者得勝。';
+  enemyState.victoryOverlay = enemy.victoryOverlay || '{enemyDisplay}瓦解，戰線得以推進。';
+  enemyState.defeatOverlay = enemy.defeatOverlay || '敵勢壓境，調整隊伍後再度挑戰。';
+  enemyState.defeatLog = enemy.defeatLog || '隊伍遭受重創，戰鬥失敗……';
+  enemyState.openingNarration = enemy.openingNarration || '';
+  enemyState.weakenTurns = 0;
+  enemyState.weakenValue = 0;
+  enemyState.dotEffects = [];
+  enemyState.actionLockTurns = 0;
+  enemyState.countdownDelay = 0;
+  enemyState.armorBreakTurns = 0;
+  enemyState.armorBreakValue = 0;
+  enemyState.phaseIndex = 0;
+
+  const firstPhase = enemyPhases[0] || {};
+  enemyState.attack = firstPhase.attack ?? enemy.attack ?? 0;
+  enemyState.countdownMax = firstPhase.countdownMax ?? enemy.countdown ?? 0;
+  enemyState.countdown = enemyState.countdownMax;
+  enemyState.shieldElement =
+    firstPhase.shieldElement !== undefined ? firstPhase.shieldElement : null;
+  enemyState.shieldReduction = firstPhase.shieldReduction ?? 0;
+
+  updateBossPortrait(enemy.artId || enemy.id);
+  updateEnemyPanel();
+}
+
+function setActiveStage(stageId) {
+  let stage = stageId ? stageIndex[stageId] : null;
+  if (!stage) {
+    stage = STORY_CAMPAIGN[0] || null;
+  }
+  if (!stage) {
+    selectedStageId = null;
+    activeStage = null;
+    configureStage(null);
+    return false;
+  }
+  const changed = !activeStage || activeStage.id !== stage.id;
+  selectedStageId = stage.id;
+  activeStage = stage;
+  configureStage(stage);
+  return changed;
+}
+
+function renderStageList() {
+  if (!storyStageList) return;
+  storyStageList.innerHTML = '';
+  const stages = [...STORY_CAMPAIGN].sort(
+    (a, b) => (a.order ?? 0) - (b.order ?? 0)
+  );
+  stages.forEach(stage => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'story-stage-card';
+    card.dataset.stageId = stage.id;
+    card.setAttribute('role', 'tab');
+    card.setAttribute('aria-controls', 'story-stage-detail');
+
+    const isActive = stage.id === selectedStageId;
+    if (isActive) {
+      card.classList.add('active');
+    }
+    card.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    card.tabIndex = isActive ? 0 : -1;
+
+    const order = document.createElement('span');
+    order.className = 'stage-order';
+    order.textContent = stage.chapter || `第${stage.order ?? ''}章`;
+    card.appendChild(order);
+
+    const title = document.createElement('h4');
+    title.className = 'stage-title';
+    title.textContent = stage.title || '';
+    card.appendChild(title);
+
+    const enemyLine = document.createElement('p');
+    enemyLine.className = 'stage-enemy';
+    enemyLine.textContent =
+      stage.enemy?.displayName || stage.enemy?.title || stage.enemy?.name || '';
+    if (enemyLine.textContent) {
+      card.appendChild(enemyLine);
+    }
+
+    const badgesContainer = document.createElement('div');
+    badgesContainer.className = 'stage-badges';
+    (stage.badges || []).forEach(label => {
+      const badge = document.createElement('span');
+      badge.className = 'stage-badge';
+      badge.textContent = label;
+      badgesContainer.appendChild(badge);
+    });
+    if (badgesContainer.childElementCount > 0) {
+      card.appendChild(badgesContainer);
+    }
+
+    card.addEventListener('click', () => {
+      selectStage(stage.id);
+    });
+
+    storyStageList.appendChild(card);
+  });
+}
+
+function renderStageDetail() {
+  const loreSection = storyBossPersona?.closest('.story-stage-lore');
+  const objectivesSection = storyStageObjectives?.closest('.story-stage-objectives');
+
+  if (!activeStage) {
+    assignText(storyStageChapter, '');
+    assignText(storyDetailTitle, '');
+    assignText(storyDetailSummary, '');
+    assignText(storyStageRecommend, '');
+    assignText(storyStageDifficulty, '');
+    assignText(storyBossPersona, '');
+    assignText(storyBossStory, '');
+    assignText(storyBossQuote, '');
+    if (storyStageVisual) {
+      storyStageVisual.innerHTML = '';
+    }
+    if (storyStageObjectives) {
+      storyStageObjectives.innerHTML = '';
+    }
+    if (loreSection) loreSection.hidden = true;
+    if (objectivesSection) objectivesSection.hidden = true;
+    return;
+  }
+
+  assignText(storyStageChapter, activeStage.chapter || '');
+  assignText(storyDetailTitle, activeStage.title || '');
+  assignText(storyDetailSummary, formatBattleText(activeStage.summary));
+
+  const recommend =
+    typeof activeStage.recommendedAttack === 'number'
+      ? `推薦戰力：${formatNumber(activeStage.recommendedAttack)}`
+      : '';
+  assignText(storyStageRecommend, recommend);
+
+  const difficultyLabel =
+    typeof activeStage.difficulty === 'number'
+      ? DIFFICULTY_LABELS[activeStage.difficulty - 1] || `${activeStage.difficulty}`
+      : '';
+  const difficultyText = difficultyLabel ? `難度 ${difficultyLabel}` : '';
+  assignText(storyStageDifficulty, difficultyText);
+
+  if (storyStageVisual) {
+    storyStageVisual.innerHTML = '';
+    const artId = activeStage.enemy?.artId || activeStage.enemy?.id;
+    const art = artId ? BOSS_ART[artId] : null;
+    if (art) {
+      storyStageVisual.innerHTML = art;
+      storyStageVisual.hidden = false;
+    } else if (activeStage.enemy?.displayName) {
+      const fallback = document.createElement('span');
+      fallback.textContent = activeStage.enemy.displayName;
+      storyStageVisual.appendChild(fallback);
+      storyStageVisual.hidden = false;
+    } else {
+      storyStageVisual.hidden = true;
+    }
+  }
+
+  assignText(storyBossPersona, formatBattleText(activeStage.enemy?.persona));
+  assignText(storyBossStory, formatBattleText(activeStage.enemy?.story));
+  assignText(storyBossQuote, formatBattleText(activeStage.enemy?.quote));
+
+  if (loreSection) {
+    const hasLore =
+      !storyBossPersona?.hidden || !storyBossStory?.hidden || !storyBossQuote?.hidden;
+    loreSection.hidden = !hasLore;
+  }
+
+  if (storyStageObjectives) {
+    storyStageObjectives.innerHTML = '';
+    (activeStage.objectives || []).forEach(obj => {
+      const item = document.createElement('li');
+      item.textContent = obj;
+      storyStageObjectives.appendChild(item);
+    });
+    const hasObjectives = storyStageObjectives.childElementCount > 0;
+    storyStageObjectives.hidden = !hasObjectives;
+    if (objectivesSection) {
+      objectivesSection.hidden = !hasObjectives;
+    }
+  }
+}
+
+function selectStage(stageId) {
+  const changed = setActiveStage(stageId);
+  renderStageList();
+  renderStageDetail();
+  if (changed && hasBattleStarted) {
+    resetGame();
   }
 }
 
@@ -271,15 +613,23 @@ function updateEnemyPanel() {
   }
   enemyCountdownText.textContent = enemyState.countdown;
   if (enemyNameText) {
-    enemyNameText.textContent = enemyState.name;
+    enemyNameText.textContent = enemyState.displayName || enemyState.name;
   }
 
   const statuses = [];
-  statuses.push(
-    `護盾：${ELEMENT_MAP[enemyState.shieldElement]}傷害 -${Math.round(
-      enemyState.shieldReduction * 100
-    )}%`
-  );
+  let shieldText = '';
+  if (enemyState.shieldReduction > 0) {
+    if (enemyState.shieldElement) {
+      shieldText = `護盾：${ELEMENT_MAP[enemyState.shieldElement]}傷害 -${Math.round(
+        enemyState.shieldReduction * 100
+      )}%`;
+    } else {
+      shieldText = `護盾：全屬傷害 -${Math.round(enemyState.shieldReduction * 100)}%`;
+    }
+  } else {
+    shieldText = '護盾：無';
+  }
+  statuses.push(shieldText);
   if (enemyState.weakenTurns > 0) {
     statuses.push(`攻擊力下降 ${enemyState.weakenTurns} 回合`);
   }
@@ -359,6 +709,7 @@ function updatePlayerPanel() {
 
 function defineHero(config) {
   const art = HERO_ART[config.id] || {};
+  const lore = HERO_LORE[config.id] || null;
   return {
     id: config.id,
     name: config.name,
@@ -370,7 +721,11 @@ function defineHero(config) {
     skillCooldown: config.skill.cooldown,
     useSkill: config.skill.effect,
     icon: art.hero || '',
-    skillIcon: art.skill || ''
+    skillIcon: art.skill || '',
+    lore,
+    tagline: lore?.tagline || '',
+    faction: lore?.faction || '',
+    role: lore?.role || ''
   };
 }
 
@@ -476,7 +831,7 @@ const HERO_LIBRARY = [
       effect: hero => {
         const painted = paintRandomOrbs("fire", 6);
         logMessage(`熔爐奔流：熔火席捲 ${painted} 格！`);
-        applyCountdownDelay(1, "熔岩奔流拖慢了虛空審判者的步伐。");
+        applyCountdownDelay(1, formatBattleText('熔岩奔流拖慢了{enemyName}的步伐。'));
       }
     }
   }),
@@ -614,7 +969,7 @@ const HERO_LIBRARY = [
       effect: hero => {
         const converted = convertOrbs("dark", "water", 2);
         logMessage(`深渦引力：暗影被吞沒 ${converted} 顆。`);
-        applyCountdownDelay(2, "深渦將審判者拉入遲滯。");
+        applyCountdownDelay(2, formatBattleText('深渦將{enemyName}拉入遲滯。'));
       }
     }
   }),
@@ -963,7 +1318,7 @@ const HERO_LIBRARY = [
       cooldown: 5,
       effect: hero => {
         extendMoveTime(2, "星陣轉輪：星象校正移動時間。");
-        applyCountdownDelay(1, "星陣結界束縛了審判者。");
+        applyCountdownDelay(1, formatBattleText('星陣結界束縛了{enemyName}。'));
       }
     }
   }),
@@ -1234,6 +1589,10 @@ function instantiateHero(data) {
     onSkill: data.useSkill,
     icon: data.icon,
     skillIcon: data.skillIcon,
+    lore: data.lore,
+    tagline: data.tagline,
+    faction: data.faction,
+    role: data.role,
     cardElement: null,
     progressFill: null
   };
@@ -1354,12 +1713,18 @@ function showHeroDetail(hero) {
 
   const meta = document.createElement("div");
   meta.className = "hero-detail-meta";
+  const role = document.createElement("span");
+  role.className = "hero-detail-role";
   const element = document.createElement("span");
   element.className = "hero-detail-element";
   element.textContent = ELEMENT_MAP[hero.element];
+  const faction = document.createElement("span");
+  faction.className = "hero-detail-attack hero-detail-faction";
   const attack = document.createElement("span");
   attack.className = "hero-detail-attack";
+  meta.appendChild(role);
   meta.appendChild(element);
+  meta.appendChild(faction);
   meta.appendChild(attack);
 
   info.appendChild(topline);
@@ -1367,6 +1732,9 @@ function showHeroDetail(hero) {
 
   header.appendChild(portrait);
   header.appendChild(info);
+
+  const tagline = document.createElement("p");
+  tagline.className = "hero-detail-tagline";
 
   const skillRow = document.createElement("div");
   skillRow.className = "hero-detail-skill";
@@ -1394,6 +1762,40 @@ function showHeroDetail(hero) {
   skillRow.appendChild(skillIcon);
   skillRow.appendChild(skillInfo);
 
+  const loreSection = document.createElement("section");
+  loreSection.className = "hero-detail-lore";
+
+  const personalityBlock = document.createElement("div");
+  const personalityHeading = document.createElement("h5");
+  personalityHeading.textContent = "性格特質";
+  const personality = document.createElement("p");
+  personality.className = "hero-detail-personality";
+  personalityBlock.appendChild(personalityHeading);
+  personalityBlock.appendChild(personality);
+
+  const backstoryBlock = document.createElement("div");
+  const backstoryHeading = document.createElement("h5");
+  backstoryHeading.textContent = "背景故事";
+  const backstory = document.createElement("p");
+  backstory.className = "hero-detail-backstory";
+  backstoryBlock.appendChild(backstoryHeading);
+  backstoryBlock.appendChild(backstory);
+
+  const traitsBlock = document.createElement("div");
+  const traitsHeading = document.createElement("h5");
+  traitsHeading.textContent = "標誌特質";
+  const traitsList = document.createElement("ul");
+  traitsList.className = "hero-detail-traits";
+  traitsBlock.appendChild(traitsHeading);
+  traitsBlock.appendChild(traitsList);
+
+  loreSection.appendChild(personalityBlock);
+  loreSection.appendChild(backstoryBlock);
+  loreSection.appendChild(traitsBlock);
+
+  const quote = document.createElement("blockquote");
+  quote.className = "hero-detail-quote";
+
   const progress = document.createElement("div");
   progress.className = "hero-detail-progress";
   const progressBar = document.createElement("div");
@@ -1415,19 +1817,33 @@ function showHeroDetail(hero) {
   });
 
   heroDetailPanel.appendChild(header);
+  heroDetailPanel.appendChild(tagline);
   heroDetailPanel.appendChild(skillRow);
+  heroDetailPanel.appendChild(loreSection);
+  heroDetailPanel.appendChild(quote);
   heroDetailPanel.appendChild(progress);
   heroDetailPanel.appendChild(action);
 
   heroDetailElements = {
     name,
     rarity,
+    role,
     element,
+    faction,
     attack,
     skillName,
     skillDesc,
     cooldown,
     progressFill,
+    tagline,
+    personality,
+    personalityBlock,
+    backstory,
+    backstoryBlock,
+    traitsList,
+    traitsBlock,
+    quote,
+    loreSection,
     actionButton: action
   };
 
@@ -1488,10 +1904,43 @@ function updateHeroDetailUI() {
 
   heroDetailElements.name.textContent = hero.name;
   heroDetailElements.rarity.textContent = "★".repeat(hero.rarity);
+  const lore = hero.lore || {};
+  assignText(heroDetailElements.role, lore.role);
   heroDetailElements.element.textContent = ELEMENT_MAP[hero.element];
+  const factionText = lore.faction || '';
+  assignText(
+    heroDetailElements.faction,
+    factionText ? `勢力 ${factionText}` : ''
+  );
   heroDetailElements.attack.textContent = `攻擊 ${formatNumber(hero.attack)}`;
   heroDetailElements.skillName.textContent = hero.skillName;
   heroDetailElements.skillDesc.textContent = hero.skillDescription;
+  assignText(heroDetailElements.tagline, lore.tagline || hero.tagline || '');
+  assignText(heroDetailElements.personality, lore.personality);
+  heroDetailElements.personalityBlock.hidden = heroDetailElements.personality.hidden;
+  assignText(heroDetailElements.backstory, lore.backstory);
+  heroDetailElements.backstoryBlock.hidden = heroDetailElements.backstory.hidden;
+
+  heroDetailElements.traitsList.innerHTML = '';
+  if (Array.isArray(lore.traits) && lore.traits.length > 0) {
+    lore.traits.forEach(trait => {
+      const item = document.createElement('li');
+      item.textContent = trait;
+      heroDetailElements.traitsList.appendChild(item);
+    });
+    heroDetailElements.traitsBlock.hidden = false;
+  } else {
+    heroDetailElements.traitsBlock.hidden = true;
+  }
+
+  assignText(heroDetailElements.quote, lore.quote);
+  if (heroDetailElements.loreSection) {
+    const hasLore =
+      !heroDetailElements.personalityBlock.hidden ||
+      !heroDetailElements.backstoryBlock.hidden ||
+      !heroDetailElements.traitsBlock.hidden;
+    heroDetailElements.loreSection.hidden = !hasLore;
+  }
 
   const ratio = hero.skillMax > 0 ? hero.skillCharge / hero.skillMax : 1;
   heroDetailElements.progressFill.style.width = `${Math.min(1, ratio) * 100}%`;
@@ -2089,7 +2538,7 @@ async function enemyTurn() {
 
   if (enemyState.actionLockTurns > 0) {
     enemyState.actionLockTurns -= 1;
-    logMessage('敵人被束縛，無法行動！');
+    logMessage(formatBattleText('{enemyDisplay}被束縛，無法行動！'));
     updateEnemyPanel();
     processPlayerRegen();
     return;
@@ -2097,7 +2546,7 @@ async function enemyTurn() {
 
   if (enemyState.countdownDelay > 0) {
     enemyState.countdownDelay -= 1;
-    logMessage('時間禁錮延緩了敵人的倒數。');
+    logMessage(formatBattleText('時間禁錮延緩了{enemyName}的倒數。'));
     updateEnemyPanel();
     processPlayerRegen();
     return;
@@ -2105,7 +2554,11 @@ async function enemyTurn() {
 
   enemyState.countdown -= 1;
   if (enemyState.countdown > 0) {
-    logMessage(`敵人倒數 ${enemyState.countdown}，危機逼近。`);
+    logMessage(
+      formatBattleText('{enemyDisplay}倒數 {countdown}，危機逼近。', {
+        countdown: enemyState.countdown
+      })
+    );
     updateEnemyPanel();
     processPlayerRegen();
     return;
@@ -2124,10 +2577,17 @@ async function enemyTurn() {
     logMessage('護盾抵擋了所有傷害！');
   } else {
     playerState.hp = Math.max(0, playerState.hp - attackPower);
-    logMessage(`虛空審判者釋放黑暗制裁，造成 ${formatNumber(attackPower)} 傷害！`);
+    const attackTemplate = enemyState.attackMessage || '{enemyDisplay}造成{damage}傷害！';
+    logMessage(
+      formatBattleText(attackTemplate, {
+        damage: formatNumber(attackPower),
+        damageRaw: attackPower
+      })
+    );
   }
 
   enemyState.countdown = enemyState.countdownMax;
+  updateEnemyPanel();
 
   if (playerState.shieldTurns > 0) {
     playerState.shieldTurns -= 1;
@@ -2198,16 +2658,28 @@ function handleVictory() {
   if (isGameOver) return;
   isGameOver = true;
   updateEnemyPanel();
-  logMessage('敵方護盾瓦解，守護者勝利！');
-  showOverlay('勝利', '你擊敗了虛空審判者，解放了失落的聖城。');
+  const victoryLog = enemyState.victoryLog
+    ? formatBattleText(enemyState.victoryLog)
+    : '守護者獲勝！';
+  logMessage(victoryLog);
+  const victoryMessage = enemyState.victoryOverlay
+    ? formatBattleText(enemyState.victoryOverlay)
+    : '勝利！';
+  showOverlay('勝利', victoryMessage);
 }
 
 function handleDefeat() {
   if (isGameOver) return;
   isGameOver = true;
   updatePlayerPanel();
-  logMessage('隊伍遭受重創，戰鬥失敗……');
-  showOverlay('戰敗', '調整隊伍或多多練習連鎖，再次挑戰！');
+  const defeatLog = enemyState.defeatLog
+    ? formatBattleText(enemyState.defeatLog)
+    : '隊伍遭受重創，戰鬥失敗……';
+  logMessage(defeatLog);
+  const defeatMessage = enemyState.defeatOverlay
+    ? formatBattleText(enemyState.defeatOverlay)
+    : '調整隊伍或多多練習連鎖，再次挑戰！';
+  showOverlay('戰敗', defeatMessage);
 }
 
 function showOverlay(title, message) {
@@ -2222,30 +2694,56 @@ function hideOverlay() {
 }
 
 function enterEnemyPhase(index, silent = false) {
-  const phase = ENEMY_PHASES[index];
+  const phase = enemyPhases[index];
+  if (!phase) return;
   enemyState.phaseIndex = index;
-  enemyState.shieldElement = phase.shieldElement;
-  enemyState.shieldReduction = phase.shieldReduction;
-  enemyState.attack = phase.attack;
-  enemyState.countdownMax = phase.countdownMax;
-  enemyState.countdown = Math.min(enemyState.countdown, enemyState.countdownMax);
+  if (phase.shieldElement !== undefined) {
+    enemyState.shieldElement = phase.shieldElement;
+  }
+  if (phase.shieldReduction !== undefined) {
+    enemyState.shieldReduction = phase.shieldReduction;
+  }
+  if (typeof phase.attack === 'number') {
+    enemyState.attack = phase.attack;
+  }
+  if (typeof phase.countdownMax === 'number') {
+    enemyState.countdownMax = phase.countdownMax;
+    enemyState.countdown = Math.min(enemyState.countdown, enemyState.countdownMax);
+    if (!Number.isFinite(enemyState.countdown) || enemyState.countdown <= 0) {
+      enemyState.countdown = enemyState.countdownMax;
+    }
+  }
   if (!silent && phase.announcement) {
-    logMessage(phase.announcement);
+    logMessage(formatBattleText(phase.announcement));
   }
   updateEnemyPanel();
 }
 
 function checkEnemyPhaseTransitions() {
-  const ratio = enemyState.hp / enemyState.maxHp;
-  for (let i = enemyState.phaseIndex + 1; i < ENEMY_PHASES.length; i++) {
-    if (ratio <= ENEMY_PHASES[i].threshold) {
-      enemyState.countdown = Math.min(enemyState.countdown + 1, ENEMY_PHASES[i].countdownMax);
+  if (!enemyPhases || enemyPhases.length === 0) return;
+  const ratio = enemyState.maxHp > 0 ? enemyState.hp / enemyState.maxHp : 0;
+  for (let i = enemyState.phaseIndex + 1; i < enemyPhases.length; i++) {
+    const phase = enemyPhases[i];
+    const threshold = phase?.threshold ?? 0;
+    if (ratio <= threshold) {
+      if (typeof phase.countdownMax === 'number') {
+        enemyState.countdown = Math.min(
+          enemyState.countdown + 1,
+          phase.countdownMax
+        );
+      }
       enterEnemyPhase(i);
     }
   }
 }
 
 function resetGame() {
+  if (activeStage) {
+    configureStage(activeStage);
+  } else {
+    configureStage(null);
+  }
+
   board = createInitialBoard();
   playerState.hp = playerState.maxHp;
   playerState.shieldTurns = 0;
@@ -2258,9 +2756,17 @@ function resetGame() {
   playerState.regenEffects = [];
   playerState.elementBuffs = {};
 
+  const firstPhase = enemyPhases[0] || {};
   enemyState.hp = enemyState.maxHp;
-  enemyState.countdown = ENEMY_PHASES[0].countdownMax;
-  enemyState.countdownMax = ENEMY_PHASES[0].countdownMax;
+  enemyState.countdownMax = firstPhase.countdownMax ?? enemyState.countdownMax ?? 0;
+  enemyState.countdown = enemyState.countdownMax;
+  enemyState.attack = firstPhase.attack ?? enemyState.attack;
+  if (firstPhase.shieldElement !== undefined) {
+    enemyState.shieldElement = firstPhase.shieldElement;
+  }
+  if (firstPhase.shieldReduction !== undefined) {
+    enemyState.shieldReduction = firstPhase.shieldReduction;
+  }
   enemyState.weakenTurns = 0;
   enemyState.weakenValue = 0;
   enemyState.dotEffects = [];
@@ -2269,7 +2775,11 @@ function resetGame() {
   enemyState.armorBreakTurns = 0;
   enemyState.armorBreakValue = 0;
   enemyState.phaseIndex = 0;
-  enterEnemyPhase(0, true);
+  if (enemyPhases.length > 0) {
+    enterEnemyPhase(0, true);
+  } else {
+    updateEnemyPanel();
+  }
 
   activeHeroes.forEach(hero => {
     hero.skillCharge = 0;
@@ -2286,8 +2796,13 @@ function resetGame() {
   updateHeroDetailUI();
   updatePlayerPanel();
   updateEnemyPanel();
+  if (enemyState.openingNarration) {
+    logMessage(formatBattleText(enemyState.openingNarration));
+  }
   logMessage('戰鬥開始！拖曳符石創造最大連鎖。');
-  logMessage(ENEMY_PHASES[0].announcement);
+  if (enemyPhases[0]?.announcement) {
+    logMessage(formatBattleText(enemyPhases[0].announcement));
+  }
 }
 function showTeamStage(mode = "overlay") {
   if (!teamStage) return;
@@ -2310,6 +2825,9 @@ function openTeamBuilder(options = {}) {
   if (activeHeroes.length > 0) {
     teamSelection = activeHeroes.map(hero => hero.id);
   }
+  renderWorldLore();
+  renderStageList();
+  renderStageDetail();
   renderTeamSelection();
   renderCollectionGrid();
   applyTeamButton.textContent = hasBattleStarted
@@ -2372,6 +2890,12 @@ function renderTeamSelection() {
 
       details.appendChild(name);
       details.appendChild(meta);
+      if (heroData.tagline) {
+        const tagline = document.createElement('p');
+        tagline.className = 'team-slot-tagline';
+        tagline.textContent = heroData.tagline;
+        details.appendChild(tagline);
+      }
       details.appendChild(skillRow);
 
       top.appendChild(portrait);
@@ -2482,6 +3006,12 @@ function renderCollectionGrid() {
     }
 
     card.appendChild(header);
+    if (hero.tagline) {
+      const tagline = document.createElement('p');
+      tagline.className = 'collection-tagline';
+      tagline.textContent = hero.tagline;
+      card.appendChild(tagline);
+    }
     card.appendChild(portrait);
     card.appendChild(elementBadge);
     card.appendChild(attack);
@@ -2583,6 +3113,8 @@ restartButton.addEventListener('click', () => {
     resetGame();
   }
 });
+
+setActiveStage(selectedStageId);
 
 const initialTeam = HERO_LIBRARY.slice(0, TEAM_SIZE).map(hero => hero.id);
 teamSelection = [...initialTeam];
