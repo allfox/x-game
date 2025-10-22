@@ -46,6 +46,10 @@
             <div class="boss-glow"></div>
           </div>
           <section class="enemy-panel">
+            <div class="enemy-header">
+              <span id="enemy-name" class="enemy-name"></span>
+              <p id="enemy-status" class="status-text"></p>
+            </div>
             <div class="enemy-info">
               <span class="enemy-info-item"><span id="enemy-hp-text"></span></span>
               <span class="enemy-info-item">ATK <span id="enemy-attack"></span></span>
@@ -61,11 +65,23 @@
           <div class="hp-section">
             <div class="player-info">
               <span id="player-hp-text"></span>
-              <button id="open-team" class="control-button" type="button">編成</button>
+              <div class="player-actions">
+                <button
+                  id="toggle-sidebar"
+                  class="control-button mobile-only"
+                  type="button"
+                  aria-controls="sidebar-panel"
+                  aria-expanded="false"
+                >
+                  資訊
+                </button>
+                <button id="open-team" class="control-button" type="button">編成</button>
+              </div>
             </div>
             <div class="hp-bar player">
               <div class="hp-fill" id="player-hp"></div>
             </div>
+            <p id="player-status" class="status-text"></p>
           </div>
           <div class="heroes" id="heroes"></div>
         </section>
@@ -78,7 +94,7 @@
         <div class="board" id="board"></div>
       </section>
 
-      <aside class="sidebar">
+      <aside id="sidebar-panel" class="sidebar">
         <section class="skills hero-inspector">
           <h3>英雄詳情</h3>
           <div id="hero-detail" class="hero-detail-panel empty">

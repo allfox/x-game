@@ -73,6 +73,12 @@ const teamSelectedContainer = document.getElementById("team-selected");
 const collectionGrid = document.getElementById("collection-grid");
 const teamMessage = document.getElementById("team-message");
 const applyTeamButton = document.getElementById("apply-team");
+const sidebarPanel = document.getElementById("sidebar-panel");
+const toggleSidebarButton = document.getElementById("toggle-sidebar");
+const mobileSidebarMedia =
+  typeof window.matchMedia === "function"
+    ? window.matchMedia("(max-width: 480px)")
+    : { matches: false };
 
 let board = [];
 let dragState = null;
@@ -86,6 +92,32 @@ let teamSelection = [];
 let hasBattleStarted = false;
 let selectedHero = null;
 let heroDetailElements = null;
+
+function applySidebarVisibility(isOpen) {
+  if (!sidebarPanel) return;
+  if (mobileSidebarMedia.matches) {
+    sidebarPanel.classList.toggle("mobile-visible", isOpen);
+    sidebarPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+    if (toggleSidebarButton) {
+      toggleSidebarButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+  } else {
+    sidebarPanel.classList.remove("mobile-visible");
+    sidebarPanel.setAttribute("aria-hidden", "false");
+    if (toggleSidebarButton) {
+      toggleSidebarButton.setAttribute("aria-expanded", "false");
+    }
+  }
+}
+
+function closeSidebarOnMobile() {
+  if (!mobileSidebarMedia.matches) return;
+  applySidebarVisibility(false);
+}
+
+function syncSidebarForViewport() {
+  applySidebarVisibility(!mobileSidebarMedia.matches);
+}
 
 const ACTIVE_BOSS_ID = "void-arbiter";
 if (bossPortraitElement && BOSS_ART[ACTIVE_BOSS_ID]) {
@@ -238,7 +270,9 @@ function updateEnemyPanel() {
     enemyAttackText.textContent = formatNumber(enemyState.attack);
   }
   enemyCountdownText.textContent = enemyState.countdown;
-  enemyNameText.textContent = enemyState.name;
+  if (enemyNameText) {
+    enemyNameText.textContent = enemyState.name;
+  }
 
   const statuses = [];
   statuses.push(
@@ -265,7 +299,9 @@ function updateEnemyPanel() {
   if (enemyState.countdownDelay > 0) {
     statuses.push(`時間禁錮 ${enemyState.countdownDelay} 回合`);
   }
-  enemyStatusText.textContent = statuses.join(" ｜ ");
+  if (enemyStatusText) {
+    enemyStatusText.textContent = statuses.join(" ｜ ");
+  }
 }
 
 function updatePlayerPanel() {
@@ -316,7 +352,9 @@ function updatePlayerPanel() {
   if (playerState.bonusMoveTime > 0 && !dragState) {
     statuses.push(`下一回合 +${playerState.bonusMoveTime.toFixed(1)} 秒移動時間`);
   }
-  playerStatusText.textContent = statuses.join(" ｜ ");
+  if (playerStatusText) {
+    playerStatusText.textContent = statuses.join(" ｜ ");
+  }
 }
 
 function defineHero(config) {
@@ -2173,6 +2211,7 @@ function handleDefeat() {
 }
 
 function showOverlay(title, message) {
+  closeSidebarOnMobile();
   overlayTitle.textContent = title;
   overlayMessage.textContent = message;
   overlay.classList.remove('hidden');
@@ -2457,6 +2496,7 @@ function applyTeamSelection() {
     teamMessage.textContent = '請選滿五名英雄後再開始戰鬥。';
     return;
   }
+  closeSidebarOnMobile();
   setActiveHeroes(teamSelection);
   if (!hasBattleStarted) {
     hasBattleStarted = true;
@@ -2492,6 +2532,7 @@ document.addEventListener('visibilitychange', () => {
 
 openTeamButton.addEventListener('click', () => {
   if (isResolving || !hasBattleStarted) return;
+  closeSidebarOnMobile();
   openTeamBuilder({ mode: 'overlay' });
 });
 
@@ -2515,6 +2556,26 @@ document.addEventListener('keydown', event => {
     hideTeamStage();
   }
 });
+
+if (toggleSidebarButton && sidebarPanel) {
+  toggleSidebarButton.addEventListener('click', () => {
+    if (!mobileSidebarMedia.matches) return;
+    const willOpen = !sidebarPanel.classList.contains('mobile-visible');
+    applySidebarVisibility(willOpen);
+  });
+}
+
+const handleSidebarMediaChange = () => {
+  syncSidebarForViewport();
+};
+
+syncSidebarForViewport();
+
+if (typeof mobileSidebarMedia.addEventListener === 'function') {
+  mobileSidebarMedia.addEventListener('change', handleSidebarMediaChange);
+} else if (typeof mobileSidebarMedia.addListener === 'function') {
+  mobileSidebarMedia.addListener(handleSidebarMediaChange);
+}
 
 applyTeamButton.addEventListener('click', applyTeamSelection);
 restartButton.addEventListener('click', () => {
