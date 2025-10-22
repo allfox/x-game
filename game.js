@@ -270,7 +270,9 @@ function updateEnemyPanel() {
     enemyAttackText.textContent = formatNumber(enemyState.attack);
   }
   enemyCountdownText.textContent = enemyState.countdown;
-  enemyNameText.textContent = enemyState.name;
+  if (enemyNameText) {
+    enemyNameText.textContent = enemyState.name;
+  }
 
   const statuses = [];
   statuses.push(
@@ -297,7 +299,9 @@ function updateEnemyPanel() {
   if (enemyState.countdownDelay > 0) {
     statuses.push(`時間禁錮 ${enemyState.countdownDelay} 回合`);
   }
-  enemyStatusText.textContent = statuses.join(" ｜ ");
+  if (enemyStatusText) {
+    enemyStatusText.textContent = statuses.join(" ｜ ");
+  }
 }
 
 function updatePlayerPanel() {
@@ -348,7 +352,9 @@ function updatePlayerPanel() {
   if (playerState.bonusMoveTime > 0 && !dragState) {
     statuses.push(`下一回合 +${playerState.bonusMoveTime.toFixed(1)} 秒移動時間`);
   }
-  playerStatusText.textContent = statuses.join(" ｜ ");
+  if (playerStatusText) {
+    playerStatusText.textContent = statuses.join(" ｜ ");
+  }
 }
 
 function defineHero(config) {
