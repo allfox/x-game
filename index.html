@@ -61,7 +61,18 @@
           <div class="hp-section">
             <div class="player-info">
               <span id="player-hp-text"></span>
-              <button id="open-team" class="control-button" type="button">編成</button>
+              <div class="player-actions">
+                <button
+                  id="toggle-sidebar"
+                  class="control-button mobile-only"
+                  type="button"
+                  aria-controls="sidebar-panel"
+                  aria-expanded="false"
+                >
+                  資訊
+                </button>
+                <button id="open-team" class="control-button" type="button">編成</button>
+              </div>
             </div>
             <div class="hp-bar player">
               <div class="hp-fill" id="player-hp"></div>
@@ -78,7 +89,7 @@
         <div class="board" id="board"></div>
       </section>
 
-      <aside class="sidebar">
+      <aside id="sidebar-panel" class="sidebar">
         <section class="skills hero-inspector">
           <h3>英雄詳情</h3>
           <div id="hero-detail" class="hero-detail-panel empty">
