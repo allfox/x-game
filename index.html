@@ -30,6 +30,49 @@
           <h2>英雄圖鑑</h2>
           <div id="collection-grid" class="collection-grid"></div>
         </section>
+        <section class="world-section">
+          <h2>世界觀：星紋層界</h2>
+          <p id="world-summary" class="world-summary"></p>
+          <div class="world-grid">
+            <div class="world-pillars">
+              <h3>靈脈支柱</h3>
+              <ul id="world-pillars"></ul>
+            </div>
+            <div class="world-factions">
+              <h3>主要勢力</h3>
+              <ul id="world-factions"></ul>
+            </div>
+          </div>
+        </section>
+        <section class="story-section">
+          <h2>劇情模式</h2>
+          <p id="story-intro" class="story-intro"></p>
+          <div class="story-layout">
+            <div id="story-stage-list" class="story-stage-list" role="tablist"></div>
+            <article id="story-stage-detail" class="story-stage-detail" aria-live="polite">
+              <header class="story-stage-header">
+                <p id="story-stage-chapter" class="story-stage-chapter"></p>
+                <h3 id="story-detail-title"></h3>
+              </header>
+              <p id="story-detail-summary" class="story-detail-summary"></p>
+              <div class="story-stage-meta">
+                <span id="story-stage-recommend" class="story-stage-recommend"></span>
+                <span id="story-stage-difficulty" class="story-stage-difficulty"></span>
+              </div>
+              <div id="story-stage-visual" class="story-stage-visual"></div>
+              <section class="story-stage-lore">
+                <h4>魔王檔案</h4>
+                <p id="story-boss-persona" class="story-boss-persona"></p>
+                <p id="story-boss-story" class="story-boss-story"></p>
+                <blockquote id="story-boss-quote" class="story-boss-quote"></blockquote>
+              </section>
+              <section class="story-stage-objectives">
+                <h4>關卡重點</h4>
+                <ul id="story-stage-objectives"></ul>
+              </section>
+            </article>
+          </div>
+        </section>
         <footer class="team-stage-footer">
           <button id="apply-team" class="control-button primary" type="button">
             確認隊伍並進入戰鬥
