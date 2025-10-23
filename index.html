@@ -28,6 +28,35 @@
         </section>
         <section class="collection-section">
           <h2>英雄圖鑑</h2>
+          <div
+            id="collection-filters"
+            class="collection-filters"
+            role="region"
+            aria-label="英雄篩選"
+          >
+            <div
+              id="collection-element-filters"
+              class="filter-group"
+              role="radiogroup"
+              aria-label="元素分類"
+            >
+              <button type="button" class="filter-chip active" data-element="all">全部</button>
+              <button type="button" class="filter-chip" data-element="fire">火焰</button>
+              <button type="button" class="filter-chip" data-element="water">水流</button>
+              <button type="button" class="filter-chip" data-element="wood">蒼藤</button>
+              <button type="button" class="filter-chip" data-element="light">聖光</button>
+              <button type="button" class="filter-chip" data-element="dark">暗影</button>
+            </div>
+            <label class="filter-select" for="collection-rarity-filter">
+              <span>稀有度</span>
+              <select id="collection-rarity-filter" name="collection-rarity-filter">
+                <option value="all">全部</option>
+                <option value="5">★5</option>
+                <option value="4">★4</option>
+                <option value="3">★3</option>
+              </select>
+            </label>
+          </div>
           <div id="collection-grid" class="collection-grid"></div>
         </section>
         <section class="world-section">
@@ -157,13 +186,24 @@
           </ul>
         </section>
       </aside>
+      <div id="battle-effects" class="battle-effects" aria-hidden="true"></div>
     </main>
 
     <div id="overlay" class="overlay hidden">
       <div class="overlay-content">
         <h2 id="overlay-title"></h2>
         <p id="overlay-message"></p>
-        <button id="restart-button">重新挑戰</button>
+        <div class="overlay-actions">
+          <button id="next-stage-button" class="overlay-button primary" type="button">
+            接續下一關
+          </button>
+          <button id="overlay-team-button" class="overlay-button" type="button">
+            返回隊伍編成
+          </button>
+          <button id="restart-button" class="overlay-button ghost" type="button">
+            重新挑戰
+          </button>
+        </div>
       </div>
     </div>
 
