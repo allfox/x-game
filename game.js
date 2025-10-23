@@ -20,12 +20,59 @@ const ELEMENT_MAP = ORB_TYPES.reduce((acc, orb) => {
   return acc;
 }, {});
 
+const ATTACK_EFFECT_COLORS = {
+  fire: { color: '#ff6b6b', glow: 'rgba(255, 107, 107, 0.68)' },
+  water: { color: '#4ecdc4', glow: 'rgba(78, 205, 196, 0.68)' },
+  wood: { color: '#7bed9f', glow: 'rgba(123, 237, 159, 0.64)' },
+  light: { color: '#ffe066', glow: 'rgba(255, 224, 102, 0.72)' },
+  dark: { color: '#b388ff', glow: 'rgba(179, 136, 255, 0.72)' },
+  heart: { color: '#ff9ac9', glow: 'rgba(255, 154, 201, 0.7)' },
+  void: { color: '#8fb0ff', glow: 'rgba(143, 176, 255, 0.7)' }
+};
+
+const HERO_GROWTH_STAGES = [
+  {
+    id: 0,
+    label: '契約等級 I',
+    attackMultiplier: 1,
+    cooldownBonus: 0,
+    bonusText: '靈能初啟，力量仍在熟悉戰鬥節奏。'
+  },
+  {
+    id: 1,
+    label: '契約等級 II',
+    attackMultiplier: 1.18,
+    cooldownBonus: 1,
+    bonusText: '攻擊 +18%，主動技能冷卻 -1 回合。'
+  },
+  {
+    id: 2,
+    label: '契約等級 III',
+    attackMultiplier: 1.36,
+    cooldownBonus: 2,
+    bonusText: '攻擊 +36%，主動技能冷卻 -2 回合。'
+  }
+];
+
+const HERO_GROWTH_REQUIREMENTS = [0, 180, 320];
+const HERO_GROWTH_MAX_STAGE = HERO_GROWTH_STAGES.length - 1;
+const HERO_GROWTH_REWARDS = { victory: 120, defeat: 60 };
+
 const DIFFICULTY_LABELS = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ'];
 
 const stageIndex = STORY_CAMPAIGN.reduce((acc, stage) => {
   acc[stage.id] = stage;
   return acc;
 }, {});
+
+const orderedStageIds = [...STORY_CAMPAIGN]
+  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  .map(stage => stage.id);
+
+const collectionFilters = {
+  element: 'all',
+  rarity: 'all'
+};
 
 let selectedStageId = STORY_CAMPAIGN[0]?.id || null;
 let activeStage = selectedStageId ? stageIndex[selectedStageId] : null;
@@ -55,10 +102,13 @@ const logList = document.getElementById("log-list");
 const overlay = document.getElementById("overlay");
 const overlayTitle = document.getElementById("overlay-title");
 const overlayMessage = document.getElementById("overlay-message");
+const overlayNextButton = document.getElementById("next-stage-button");
+const overlayTeamButton = document.getElementById("overlay-team-button");
 const restartButton = document.getElementById("restart-button");
 const openTeamButton = document.getElementById("open-team");
 const teamSelectedContainer = document.getElementById("team-selected");
 const collectionGrid = document.getElementById("collection-grid");
+const effectLayer = document.getElementById("battle-effects");
 const teamMessage = document.getElementById("team-message");
 const applyTeamButton = document.getElementById("apply-team");
 const sidebarPanel = document.getElementById("sidebar-panel");
@@ -78,6 +128,8 @@ const storyBossPersona = document.getElementById("story-boss-persona");
 const storyBossStory = document.getElementById("story-boss-story");
 const storyBossQuote = document.getElementById("story-boss-quote");
 const storyStageObjectives = document.getElementById("story-stage-objectives");
+const collectionElementFilters = document.getElementById("collection-element-filters");
+const collectionRarityFilter = document.getElementById("collection-rarity-filter");
 const mobileSidebarMedia =
   typeof window.matchMedia === "function"
     ? window.matchMedia("(max-width: 480px)")
@@ -95,6 +147,7 @@ let teamSelection = [];
 let hasBattleStarted = false;
 let selectedHero = null;
 let heroDetailElements = null;
+let overlayMode = null;
 
 function applySidebarVisibility(isOpen) {
   if (!sidebarPanel) return;
@@ -200,6 +253,13 @@ function getStageContext() {
   };
 }
 
+function getNextStageId(stageId) {
+  if (!stageId) return null;
+  const index = orderedStageIds.indexOf(stageId);
+  if (index === -1) return null;
+  return orderedStageIds[index + 1] || null;
+}
+
 function formatBattleText(template, extra = {}) {
   if (!template) return '';
   const context = { ...getStageContext(), ...extra };
@@ -218,6 +278,24 @@ function assignText(element, text) {
     element.textContent = '';
     element.hidden = true;
   }
+}
+
+function triggerAttackEffect(type, options = {}) {
+  if (!effectLayer) return;
+  const element = options.element || 'void';
+  const palette = ATTACK_EFFECT_COLORS[element] || ATTACK_EFFECT_COLORS.void;
+  const intensity = Math.max(0.5, Math.min(options.intensity ?? 1, 1.6));
+  const effect = document.createElement('div');
+  effect.className = 'attack-effect';
+  effect.classList.add(type === 'enemy' ? 'enemy-effect' : 'player-effect');
+  effect.classList.add(`element-${element}`);
+  effect.style.setProperty('--effect-color', palette.color);
+  effect.style.setProperty('--effect-glow', palette.glow);
+  effect.style.setProperty('--effect-scale', intensity.toString());
+  effectLayer.appendChild(effect);
+  effect.addEventListener('animationend', () => {
+    effect.remove();
+  });
 }
 
 function renderWorldLore() {
@@ -780,7 +858,7 @@ const HERO_LIBRARY = [
       description: "以劍氣造成 3 倍攻擊真實傷害並粉碎護甲 2 回合。",
       cooldown: 7,
       effect: hero => {
-        dealDirectDamage(hero.attack * 3, "煌焰審判", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 3, "煌焰審判", { ignoreShield: true, element: hero.element });
         applyArmorBreak(0.4, 2, "羅格的烈焰斬擊削弱敵人防禦！");
       }
     }
@@ -846,7 +924,7 @@ const HERO_LIBRARY = [
       description: "造成 4 倍攻擊真實傷害並使下一回合移動 +1 秒。",
       cooldown: 8,
       effect: hero => {
-        dealDirectDamage(hero.attack * 4, "紅蓮瞬斬", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 4, "紅蓮瞬斬", { ignoreShield: true, element: hero.element });
         extendMoveTime(1, "霜火的舞步延長了移動時間！");
       }
     }
@@ -864,7 +942,7 @@ const HERO_LIBRARY = [
       effect: hero => {
         const fireCount = countOrbs("fire");
         const damage = fireCount * 280;
-        dealDirectDamage(damage, "熔爆重拳", { ignoreShield: true });
+        dealDirectDamage(damage, "熔爆重拳", { ignoreShield: true, element: hero.element });
         if (fireCount >= 8) {
           applyArmorBreak(0.25, 1, "熔爆重拳震碎護甲！");
         }
@@ -984,7 +1062,7 @@ const HERO_LIBRARY = [
       description: "造成 3 倍攻擊真實傷害並令敵人 1 回合無法行動。",
       cooldown: 7,
       effect: hero => {
-        dealDirectDamage(hero.attack * 3, "極寒破襲", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 3, "極寒破襲", { ignoreShield: true, element: hero.element });
         applyEnemyActionLock(1, "極寒破襲凍結了敵人的動作！");
       }
     }
@@ -1167,7 +1245,7 @@ const HERO_LIBRARY = [
       description: "造成 3 倍攻擊真實傷害並強化連鎖 1 回合。",
       cooldown: 6,
       effect: hero => {
-        dealDirectDamage(hero.attack * 3, "疾風箭雨", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 3, "疾風箭雨", { ignoreShield: true, element: hero.element });
         applyComboBoost(0.15, 1, "疾風箭雨：箭雨開闢更多連結！");
       }
     }
@@ -1235,7 +1313,7 @@ const HERO_LIBRARY = [
       cooldown: 7,
       effect: hero => {
         applyEnemyDot({ damage: 1300, turns: 3, label: "蛇影劇毒" });
-        dealDirectDamage(hero.attack * 2, "蛇影毒擊", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 2, "蛇影毒擊", { ignoreShield: true, element: hero.element });
       }
     }
   }),
@@ -1301,7 +1379,7 @@ const HERO_LIBRARY = [
       description: "造成 3.5 倍攻擊真實傷害並延長移動 1 秒。",
       cooldown: 6,
       effect: hero => {
-        dealDirectDamage(hero.attack * 3.5, "耀刃瞬襲", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 3.5, "耀刃瞬襲", { ignoreShield: true, element: hero.element });
         extendMoveTime(1, "耀刃瞬襲：劍光指引更長路徑。");
       }
     }
@@ -1432,7 +1510,7 @@ const HERO_LIBRARY = [
       description: "造成 3.8 倍攻擊真實傷害並破甲 2 回合。",
       cooldown: 7,
       effect: hero => {
-        dealDirectDamage(hero.attack * 3.8, "虛空裂刃", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 3.8, "虛空裂刃", { ignoreShield: true, element: hero.element });
         applyArmorBreak(0.25, 2, "虛空裂刃撕裂了護盾！");
       }
     }
@@ -1480,7 +1558,7 @@ const HERO_LIBRARY = [
       description: "造成 2.5 倍攻擊真實傷害並回復 12% 生命。",
       cooldown: 6,
       effect: hero => {
-        dealDirectDamage(hero.attack * 2.5, "冥河血契", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 2.5, "冥河血契", { ignoreShield: true, element: hero.element });
         healPlayerPercent(0.12, "冥河血契：");
       }
     }
@@ -1547,7 +1625,7 @@ const HERO_LIBRARY = [
       cooldown: 6,
       effect: hero => {
         extendMoveTime(1.5, "暮色連閃：影步無聲。");
-        dealDirectDamage(hero.attack * 2.8, "暮色連閃", { ignoreShield: true });
+        dealDirectDamage(hero.attack * 2.8, "暮色連閃", { ignoreShield: true, element: hero.element });
       }
     }
   }),
@@ -1575,15 +1653,142 @@ const heroIndex = HERO_LIBRARY.reduce((acc, hero) => {
   return acc;
 }, {});
 
-function instantiateHero(data) {
+const heroProgressState = HERO_LIBRARY.reduce((acc, hero) => {
+  acc[hero.id] = { stage: 0, xp: 0 };
+  return acc;
+}, {});
+
+function getHeroProgress(heroId) {
+  if (!heroProgressState[heroId]) {
+    heroProgressState[heroId] = { stage: 0, xp: 0 };
+  }
+  return heroProgressState[heroId];
+}
+
+function getHeroDisplayStats(heroId) {
+  const base = heroIndex[heroId];
+  const progress = getHeroProgress(heroId);
+  if (!base) {
+    return {
+      attack: 0,
+      skillMax: 0,
+      stageIndex: 0,
+      stageLabel: '',
+      stageDescription: '',
+      xp: 0,
+      nextRequirement: null,
+      progressRatio: 0
+    };
+  }
+  const stageData = HERO_GROWTH_STAGES[progress.stage] || HERO_GROWTH_STAGES[0];
+  const requirement = HERO_GROWTH_REQUIREMENTS[progress.stage + 1] || null;
+  const maxReduction = Math.max(0, base.skillCooldown - 2);
+  const cooldownReduction = Math.min(stageData.cooldownBonus, maxReduction);
+  const skillMax = Math.max(2, base.skillCooldown - cooldownReduction);
+  const attack = Math.round(base.attack * stageData.attackMultiplier);
+  const xp = requirement ? Math.min(progress.xp, requirement) : progress.xp;
+  const progressRatio = requirement ? Math.min(1, xp / requirement) : 1;
   return {
+    attack,
+    skillMax,
+    stageIndex: progress.stage,
+    stageLabel: stageData.label,
+    stageDescription: stageData.bonusText,
+    xp,
+    nextRequirement: requirement,
+    progressRatio
+  };
+}
+
+function canHeroEvolve(heroId) {
+  const progress = getHeroProgress(heroId);
+  if (progress.stage >= HERO_GROWTH_MAX_STAGE) return false;
+  const requirement = HERO_GROWTH_REQUIREMENTS[progress.stage + 1];
+  return requirement ? progress.xp >= requirement : false;
+}
+
+function evolveHeroStage(heroId) {
+  if (!canHeroEvolve(heroId)) return false;
+  const progress = getHeroProgress(heroId);
+  progress.stage = Math.min(HERO_GROWTH_MAX_STAGE, progress.stage + 1);
+  progress.xp = 0;
+  return true;
+}
+
+function addHeroExperience(heroId, amount) {
+  if (amount <= 0) return false;
+  const progress = getHeroProgress(heroId);
+  if (progress.stage >= HERO_GROWTH_MAX_STAGE) return false;
+  const requirement = HERO_GROWTH_REQUIREMENTS[progress.stage + 1];
+  if (!requirement) return false;
+  const before = progress.xp;
+  progress.xp = Math.min(requirement, progress.xp + amount);
+  return progress.xp !== before;
+}
+
+function applyGrowthToHero(hero) {
+  if (!hero) return;
+  const stats = getHeroDisplayStats(hero.id);
+  hero.attack = stats.attack;
+  const newSkillMax = stats.skillMax;
+  hero.skillMax = newSkillMax;
+  if (typeof hero.skillCharge === 'number') {
+    hero.skillCharge = Math.min(hero.skillCharge, newSkillMax);
+  } else {
+    hero.skillCharge = 0;
+  }
+  hero.growthStage = stats.stageIndex;
+  hero.growthLabel = stats.stageLabel;
+  hero.growthDescription = stats.stageDescription;
+  hero.growthXp = stats.xp;
+  hero.growthRequirement = stats.nextRequirement;
+  hero.growthProgressRatio = stats.progressRatio;
+}
+
+function refreshHeroesAfterGrowth() {
+  activeHeroes.forEach(hero => {
+    applyGrowthToHero(hero);
+  });
+  updateHeroUI();
+  updateHeroDetailUI();
+  renderTeamSelection();
+  renderCollectionGrid();
+}
+
+function rewardHeroExperience(outcome) {
+  const amount = HERO_GROWTH_REWARDS[outcome] || 0;
+  if (amount <= 0 || activeHeroes.length === 0) return;
+  let gained = false;
+  activeHeroes.forEach(hero => {
+    gained = addHeroExperience(hero.id, amount) || gained;
+  });
+  if (gained) {
+    logMessage(`隊伍契約經驗 +${amount}，英雄的靈能逐步覺醒。`);
+    refreshHeroesAfterGrowth();
+  }
+}
+
+function attemptHeroEvolution(hero) {
+  if (!hero) return;
+  if (!canHeroEvolve(hero.id)) return;
+  if (!evolveHeroStage(hero.id)) return;
+  const stageData = HERO_GROWTH_STAGES[getHeroProgress(hero.id).stage];
+  const base = heroIndex[hero.id];
+  const heroName = base?.name || hero.name || '英雄';
+  logMessage(`${heroName} 的契約提升至 ${stageData.label}！`);
+  refreshHeroesAfterGrowth();
+}
+function instantiateHero(data) {
+  const hero = {
     id: data.id,
     name: data.name,
     element: data.element,
     rarity: data.rarity,
+    baseAttack: data.attack,
     attack: data.attack,
     skillName: data.skillName,
     skillDescription: data.skillDescription,
+    baseSkillCooldown: data.skillCooldown,
     skillMax: data.skillCooldown,
     skillCharge: 0,
     onSkill: data.useSkill,
@@ -1594,8 +1799,11 @@ function instantiateHero(data) {
     faction: data.faction,
     role: data.role,
     cardElement: null,
-    progressFill: null
+    progressFill: null,
+    stageBadge: null
   };
+  applyGrowthToHero(hero);
+  return hero;
 }
 function createHeroCards() {
   if (!heroesContainer) return;
@@ -1625,12 +1833,17 @@ function createHeroCards() {
       portrait.appendChild(fallback);
     }
 
+    const stageBadge = document.createElement("span");
+    stageBadge.className = "hero-avatar-stage";
+    stageBadge.textContent = hero.growthLabel || '';
+
     const cooldown = document.createElement("span");
     cooldown.className = "hero-avatar-cd";
     const cooldownFill = document.createElement("span");
     cooldownFill.className = "hero-avatar-cd-fill";
     cooldown.appendChild(cooldownFill);
 
+    avatar.appendChild(stageBadge);
     avatar.appendChild(portrait);
     avatar.appendChild(cooldown);
 
@@ -1640,6 +1853,7 @@ function createHeroCards() {
 
     hero.cardElement = avatar;
     hero.progressFill = cooldownFill;
+    hero.stageBadge = stageBadge;
 
     heroesContainer.appendChild(avatar);
   });
@@ -1762,6 +1976,45 @@ function showHeroDetail(hero) {
   skillRow.appendChild(skillIcon);
   skillRow.appendChild(skillInfo);
 
+  const growthSection = document.createElement("section");
+  growthSection.className = "hero-detail-growth";
+  const growthHeader = document.createElement("div");
+  growthHeader.className = "hero-detail-growth-header";
+  const growthTitle = document.createElement("h5");
+  growthTitle.textContent = "契約階段";
+  const growthLabel = document.createElement("span");
+  growthLabel.className = "hero-detail-growth-label";
+  growthHeader.appendChild(growthTitle);
+  growthHeader.appendChild(growthLabel);
+
+  const growthDesc = document.createElement("p");
+  growthDesc.className = "hero-detail-growth-desc";
+
+  const growthTrack = document.createElement("div");
+  growthTrack.className = "hero-detail-growth-track";
+  const growthBar = document.createElement("div");
+  growthBar.className = "hero-detail-growth-bar";
+  const growthFill = document.createElement("div");
+  growthFill.className = "hero-detail-growth-fill";
+  growthBar.appendChild(growthFill);
+  const growthValue = document.createElement("span");
+  growthValue.className = "hero-detail-growth-value";
+  growthTrack.appendChild(growthBar);
+  growthTrack.appendChild(growthValue);
+
+  const evolveButton = document.createElement("button");
+  evolveButton.type = "button";
+  evolveButton.className = "hero-detail-evolve";
+  evolveButton.textContent = "進化";
+  evolveButton.addEventListener("click", () => {
+    attemptHeroEvolution(hero);
+  });
+
+  growthSection.appendChild(growthHeader);
+  growthSection.appendChild(growthDesc);
+  growthSection.appendChild(growthTrack);
+  growthSection.appendChild(evolveButton);
+
   const loreSection = document.createElement("section");
   loreSection.className = "hero-detail-lore";
 
@@ -1819,6 +2072,7 @@ function showHeroDetail(hero) {
   heroDetailPanel.appendChild(header);
   heroDetailPanel.appendChild(tagline);
   heroDetailPanel.appendChild(skillRow);
+  heroDetailPanel.appendChild(growthSection);
   heroDetailPanel.appendChild(loreSection);
   heroDetailPanel.appendChild(quote);
   heroDetailPanel.appendChild(progress);
@@ -1835,6 +2089,12 @@ function showHeroDetail(hero) {
     skillDesc,
     cooldown,
     progressFill,
+    growthSection,
+    growthLabel,
+    growthDesc,
+    growthFill,
+    growthValue,
+    growthButton: evolveButton,
     tagline,
     personality,
     personalityBlock,
@@ -1874,6 +2134,9 @@ function updateHeroUI() {
     const ratio = hero.skillMax > 0 ? hero.skillCharge / hero.skillMax : 1;
     if (hero.progressFill) {
       hero.progressFill.style.width = `${Math.min(1, ratio) * 100}%`;
+    }
+    if (hero.stageBadge) {
+      hero.stageBadge.textContent = hero.growthLabel || '';
     }
     if (hero.cardElement) {
       hero.cardElement.classList.toggle("ready", ratio >= 1);
@@ -1920,6 +2183,35 @@ function updateHeroDetailUI() {
   heroDetailElements.personalityBlock.hidden = heroDetailElements.personality.hidden;
   assignText(heroDetailElements.backstory, lore.backstory);
   heroDetailElements.backstoryBlock.hidden = heroDetailElements.backstory.hidden;
+
+  if (heroDetailElements.growthLabel) {
+    heroDetailElements.growthLabel.textContent = hero.growthLabel || '';
+  }
+  if (heroDetailElements.growthDesc) {
+    heroDetailElements.growthDesc.textContent = hero.growthDescription || '';
+  }
+  if (heroDetailElements.growthFill) {
+    const ratioValue = Math.min(1, hero.growthProgressRatio ?? 0);
+    heroDetailElements.growthFill.style.width = `${ratioValue * 100}%`;
+  }
+  if (heroDetailElements.growthValue) {
+    heroDetailElements.growthValue.textContent = hero.growthRequirement
+      ? `契約進度 ${formatNumber(hero.growthXp)}/${formatNumber(hero.growthRequirement)}`
+      : '契約等級已達上限';
+  }
+  if (heroDetailElements.growthButton) {
+    const evolvable = canHeroEvolve(hero.id);
+    heroDetailElements.growthButton.disabled = !evolvable;
+    heroDetailElements.growthButton.textContent = hero.growthRequirement
+      ? evolvable
+        ? '進化'
+        : '進化條件未滿'
+      : '契約已滿';
+    heroDetailElements.growthButton.setAttribute(
+      'aria-disabled',
+      heroDetailElements.growthButton.disabled ? 'true' : 'false'
+    );
+  }
 
   heroDetailElements.traitsList.innerHTML = '';
   if (Array.isArray(lore.traits) && lore.traits.length > 0) {
@@ -2241,6 +2533,10 @@ function applyComboEffects(totalCombos, cascades, elementCombos, elementOrbs) {
         rawDamage = Math.round(rawDamage * (1 + enemyState.armorBreakValue));
       }
       damage = Math.max(0, rawDamage);
+      if (damage > 0) {
+        const effectStrength = Math.min(1.4, 0.6 + combos * 0.2 + Math.min(orbs, 9) * 0.02);
+        triggerAttackEffect('player', { element: hero.element, intensity: effectStrength });
+      }
     }
 
     if (combos > 0 || elementCombos.heart > 0) {
@@ -2414,7 +2710,7 @@ function chargeTeam(amount, options = {}) {
 }
 
 function dealDirectDamage(amount, label, options = {}) {
-  const { element = null, ignoreShield = true } = options;
+  const { element = 'void', ignoreShield = true } = options;
   let finalDamage = Math.round(amount);
   if (!ignoreShield && element && enemyState.shieldElement === element) {
     finalDamage = Math.round(finalDamage * (1 - enemyState.shieldReduction));
@@ -2428,6 +2724,10 @@ function dealDirectDamage(amount, label, options = {}) {
     return;
   }
   enemyState.hp = Math.max(0, enemyState.hp - finalDamage);
+  triggerAttackEffect('player', {
+    element,
+    intensity: Math.min(1.5, 0.7 + finalDamage / 40000)
+  });
   logMessage(`${label}造成 ${formatNumber(finalDamage)} 傷害！`);
   updateEnemyPanel();
   if (enemyState.hp <= 0) {
@@ -2584,6 +2884,10 @@ async function enemyTurn() {
         damageRaw: attackPower
       })
     );
+    triggerAttackEffect('enemy', {
+      element: enemyState.shieldElement || 'void',
+      intensity: Math.min(1.5, 0.6 + attackPower / playerState.maxHp * 1.8)
+    });
   }
 
   enemyState.countdown = enemyState.countdownMax;
@@ -2662,10 +2966,11 @@ function handleVictory() {
     ? formatBattleText(enemyState.victoryLog)
     : '守護者獲勝！';
   logMessage(victoryLog);
+  rewardHeroExperience('victory');
   const victoryMessage = enemyState.victoryOverlay
     ? formatBattleText(enemyState.victoryOverlay)
     : '勝利！';
-  showOverlay('勝利', victoryMessage);
+  showOverlay('勝利', victoryMessage, { mode: 'victory' });
 }
 
 function handleDefeat() {
@@ -2676,21 +2981,50 @@ function handleDefeat() {
     ? formatBattleText(enemyState.defeatLog)
     : '隊伍遭受重創，戰鬥失敗……';
   logMessage(defeatLog);
+  rewardHeroExperience('defeat');
   const defeatMessage = enemyState.defeatOverlay
     ? formatBattleText(enemyState.defeatOverlay)
     : '調整隊伍或多多練習連鎖，再次挑戰！';
-  showOverlay('戰敗', defeatMessage);
+  showOverlay('戰敗', defeatMessage, { mode: 'defeat' });
 }
 
-function showOverlay(title, message) {
+function showOverlay(title, message, options = {}) {
   closeSidebarOnMobile();
+  overlayMode = options.mode || null;
   overlayTitle.textContent = title;
   overlayMessage.textContent = message;
+  if (overlayNextButton) {
+    const nextStageId = overlayMode === 'victory' ? getNextStageId(selectedStageId) : null;
+    if (overlayMode === 'victory' && nextStageId) {
+      overlayNextButton.hidden = false;
+      overlayNextButton.disabled = false;
+      overlayNextButton.dataset.nextStageId = nextStageId;
+      const nextStage = stageIndex[nextStageId];
+      overlayNextButton.textContent = '接續下一關';
+      overlayNextButton.title = nextStage
+        ? `前往 ${nextStage.chapter || ''} ${nextStage.title || ''}`.trim()
+        : '接續下一關';
+    } else {
+      overlayNextButton.hidden = true;
+      overlayNextButton.dataset.nextStageId = '';
+      overlayNextButton.title = '';
+    }
+  }
+  if (overlayTeamButton) {
+    overlayTeamButton.hidden = false;
+  }
+  if (restartButton) {
+    restartButton.textContent = overlayMode === 'victory' ? '重挑本關' : '重新挑戰';
+  }
   overlay.classList.remove('hidden');
 }
 
 function hideOverlay() {
   overlay.classList.add('hidden');
+  overlayMode = null;
+  if (overlayNextButton) {
+    overlayNextButton.dataset.nextStageId = '';
+  }
 }
 
 function enterEnemyPhase(index, silent = false) {
@@ -2844,55 +3178,67 @@ function renderTeamSelection() {
     const heroId = teamSelection[i];
     if (heroId) {
       const heroData = heroIndex[heroId];
-      const top = document.createElement('div');
-      top.className = 'team-slot-top';
+      const stats = getHeroDisplayStats(heroId);
+      const top = document.createElement("div");
+      top.className = "team-slot-top";
 
-      const portrait = document.createElement('div');
-      portrait.className = 'team-slot-icon';
-      portrait.style.setProperty('--element-gradient', getElementGradient(heroData.element));
+      const portrait = document.createElement("div");
+      portrait.className = "team-slot-icon";
+      portrait.style.setProperty("--element-gradient", getElementGradient(heroData.element));
       if (heroData.icon) {
         portrait.innerHTML = heroData.icon;
       } else {
-        const fallback = document.createElement('span');
-        fallback.className = 'hero-icon-fallback';
+        const fallback = document.createElement("span");
+        fallback.className = "hero-icon-fallback";
         fallback.textContent = heroData.name.slice(0, 2);
         portrait.appendChild(fallback);
       }
 
-      const details = document.createElement('div');
-      details.className = 'team-slot-details';
+      const details = document.createElement("div");
+      details.className = "team-slot-details";
 
-      const name = document.createElement('h4');
+      const name = document.createElement("h4");
       name.textContent = heroData.name;
+      const stageBadge = document.createElement("span");
+      stageBadge.className = "team-slot-stage";
+      stageBadge.textContent = stats.stageLabel;
+      name.appendChild(stageBadge);
 
-      const meta = document.createElement('p');
-      meta.className = 'team-slot-meta';
-      meta.textContent = `${ELEMENT_MAP[heroData.element]} ｜ 稀有度 ${'★'.repeat(heroData.rarity)} ｜ 攻擊 ${formatNumber(heroData.attack)} ｜ CD ${heroData.skillCooldown}`;
+      const meta = document.createElement("p");
+      meta.className = "team-slot-meta";
+      meta.textContent = `${ELEMENT_MAP[heroData.element]} ｜ 稀有度 ${"★".repeat(heroData.rarity)} ｜ 攻擊 ${formatNumber(stats.attack)} ｜ CD ${stats.skillMax}`;
 
-      const skillRow = document.createElement('div');
-      skillRow.className = 'team-slot-skill';
-      const skillIcon = document.createElement('span');
-      skillIcon.className = 'team-slot-skill-icon';
-      skillIcon.style.setProperty('--element-gradient', getElementGradient(heroData.element));
+      const growth = document.createElement("p");
+      growth.className = "team-slot-growth";
+      growth.textContent = stats.nextRequirement
+        ? `契約經驗 ${formatNumber(stats.xp)}/${formatNumber(stats.nextRequirement)}`
+        : "契約等級已達上限";
+
+      const skillRow = document.createElement("div");
+      skillRow.className = "team-slot-skill";
+      const skillIcon = document.createElement("span");
+      skillIcon.className = "team-slot-skill-icon";
+      skillIcon.style.setProperty("--element-gradient", getElementGradient(heroData.element));
       if (heroData.skillIcon) {
         skillIcon.innerHTML = heroData.skillIcon;
       } else {
-        const iconFallback = document.createElement('span');
-        iconFallback.className = 'skill-icon-fallback';
+        const iconFallback = document.createElement("span");
+        iconFallback.className = "skill-icon-fallback";
         iconFallback.textContent = heroData.skillName.charAt(0);
         skillIcon.appendChild(iconFallback);
       }
-      const skillText = document.createElement('p');
-      skillText.className = 'team-slot-skill-text';
+      const skillText = document.createElement("p");
+      skillText.className = "team-slot-skill-text";
       skillText.textContent = `${heroData.skillName}：${heroData.skillDescription}`;
       skillRow.appendChild(skillIcon);
       skillRow.appendChild(skillText);
 
       details.appendChild(name);
       details.appendChild(meta);
+      details.appendChild(growth);
       if (heroData.tagline) {
-        const tagline = document.createElement('p');
-        tagline.className = 'team-slot-tagline';
+        const tagline = document.createElement("p");
+        tagline.className = "team-slot-tagline";
         tagline.textContent = heroData.tagline;
         details.appendChild(tagline);
       }
@@ -2924,101 +3270,141 @@ function renderTeamSelection() {
 }
 
 function renderCollectionGrid() {
+  if (!collectionGrid) return;
   collectionGrid.innerHTML = '';
-  HERO_LIBRARY.forEach(hero => {
-    const card = document.createElement('article');
-    card.className = 'collection-card';
-    card.dataset.element = hero.element;
-    if (teamSelection.includes(hero.id)) {
-      card.classList.add('selected');
+
+  const filtered = HERO_LIBRARY.filter(hero => {
+    if (collectionFilters.element !== 'all' && hero.element !== collectionFilters.element) {
+      return false;
     }
-
-    const header = document.createElement('div');
-    header.className = 'collection-header';
-    const name = document.createElement('h4');
-    name.textContent = hero.name;
-    const stars = document.createElement('span');
-    stars.className = 'collection-stars';
-    stars.textContent = '★'.repeat(hero.rarity);
-    header.appendChild(name);
-    header.appendChild(stars);
-
-    const portrait = document.createElement('div');
-    portrait.className = 'collection-portrait';
-    portrait.style.setProperty('--element-gradient', getElementGradient(hero.element));
-    if (hero.icon) {
-      portrait.innerHTML = hero.icon;
-    } else {
-      const fallback = document.createElement('span');
-      fallback.className = 'hero-icon-fallback';
-      fallback.textContent = hero.name.slice(0, 2);
-      portrait.appendChild(fallback);
+    if (collectionFilters.rarity !== 'all' && String(hero.rarity) !== collectionFilters.rarity) {
+      return false;
     }
-
-    const elementBadge = document.createElement('span');
-    elementBadge.className = 'collection-element';
-    elementBadge.textContent = ELEMENT_MAP[hero.element];
-
-    const attack = document.createElement('p');
-    attack.className = 'collection-attack';
-    attack.textContent = `攻擊 ${formatNumber(hero.attack)} ｜ CD ${hero.skillCooldown}`;
-
-    const skill = document.createElement('div');
-    skill.className = 'collection-skill';
-    const skillIcon = document.createElement('span');
-    skillIcon.className = 'collection-skill-icon';
-    skillIcon.style.setProperty('--element-gradient', getElementGradient(hero.element));
-    if (hero.skillIcon) {
-      skillIcon.innerHTML = hero.skillIcon;
-    } else {
-      const iconFallback = document.createElement('span');
-      iconFallback.className = 'skill-icon-fallback';
-      iconFallback.textContent = hero.skillName.charAt(0);
-      skillIcon.appendChild(iconFallback);
-    }
-    const skillText = document.createElement('p');
-    skillText.className = 'collection-skill-text';
-    skillText.textContent = `${hero.skillName}：${hero.skillDescription}`;
-    skill.appendChild(skillIcon);
-    skill.appendChild(skillText);
-
-    const action = document.createElement('button');
-    action.type = 'button';
-    action.className = 'collection-action';
-    if (teamSelection.includes(hero.id)) {
-      action.textContent = '移出隊伍';
-      action.disabled = false;
-      action.addEventListener('click', () => {
-        teamSelection = teamSelection.filter(id => id !== hero.id);
-        renderTeamSelection();
-        renderCollectionGrid();
-      });
-    } else if (teamSelection.length >= TEAM_SIZE) {
-      action.textContent = '隊伍已滿';
-      action.disabled = true;
-    } else {
-      action.textContent = '加入隊伍';
-      action.addEventListener('click', () => {
-        teamSelection.push(hero.id);
-        renderTeamSelection();
-        renderCollectionGrid();
-      });
-    }
-
-    card.appendChild(header);
-    if (hero.tagline) {
-      const tagline = document.createElement('p');
-      tagline.className = 'collection-tagline';
-      tagline.textContent = hero.tagline;
-      card.appendChild(tagline);
-    }
-    card.appendChild(portrait);
-    card.appendChild(elementBadge);
-    card.appendChild(attack);
-    card.appendChild(skill);
-    card.appendChild(action);
-    collectionGrid.appendChild(card);
+    return true;
   });
+
+  filtered
+    .slice()
+    .sort((a, b) => {
+      const statsA = getHeroDisplayStats(a.id);
+      const statsB = getHeroDisplayStats(b.id);
+      if (statsA.stageIndex !== statsB.stageIndex) {
+        return statsB.stageIndex - statsA.stageIndex;
+      }
+      if (a.rarity !== b.rarity) {
+        return b.rarity - a.rarity;
+      }
+      return a.name.localeCompare(b.name, 'zh-Hant-u-co-stroke');
+    })
+    .forEach(hero => {
+      const stats = getHeroDisplayStats(hero.id);
+      const card = document.createElement('article');
+      card.className = 'collection-card';
+      card.dataset.element = hero.element;
+      if (teamSelection.includes(hero.id)) {
+        card.classList.add('selected');
+      }
+
+      const header = document.createElement('div');
+      header.className = 'collection-header';
+      const headerGroup = document.createElement('div');
+      headerGroup.className = 'collection-header-group';
+      const name = document.createElement('h4');
+      name.textContent = hero.name;
+      const stageBadge = document.createElement('span');
+      stageBadge.className = 'collection-stage';
+      stageBadge.textContent = stats.stageLabel;
+      headerGroup.appendChild(name);
+      headerGroup.appendChild(stageBadge);
+      const stars = document.createElement('span');
+      stars.className = 'collection-stars';
+      stars.textContent = '★'.repeat(hero.rarity);
+      header.appendChild(headerGroup);
+      header.appendChild(stars);
+
+      const portrait = document.createElement('div');
+      portrait.className = 'collection-portrait';
+      portrait.style.setProperty('--element-gradient', getElementGradient(hero.element));
+      if (hero.icon) {
+        portrait.innerHTML = hero.icon;
+      } else {
+        const fallback = document.createElement('span');
+        fallback.className = 'hero-icon-fallback';
+        fallback.textContent = hero.name.slice(0, 2);
+        portrait.appendChild(fallback);
+      }
+
+      const elementBadge = document.createElement('span');
+      elementBadge.className = 'collection-element';
+      elementBadge.textContent = ELEMENT_MAP[hero.element];
+
+      const attack = document.createElement('p');
+      attack.className = 'collection-attack';
+      attack.textContent = `攻擊 ${formatNumber(stats.attack)} ｜ CD ${stats.skillMax}`;
+
+      const growth = document.createElement('p');
+      growth.className = 'collection-growth';
+      growth.textContent = stats.nextRequirement
+        ? `契約經驗 ${formatNumber(stats.xp)}/${formatNumber(stats.nextRequirement)}`
+        : '契約等級已達上限';
+
+      const skill = document.createElement('div');
+      skill.className = 'collection-skill';
+      const skillIcon = document.createElement('span');
+      skillIcon.className = 'collection-skill-icon';
+      skillIcon.style.setProperty('--element-gradient', getElementGradient(hero.element));
+      if (hero.skillIcon) {
+        skillIcon.innerHTML = hero.skillIcon;
+      } else {
+        const iconFallback = document.createElement('span');
+        iconFallback.className = 'skill-icon-fallback';
+        iconFallback.textContent = hero.skillName.charAt(0);
+        skillIcon.appendChild(iconFallback);
+      }
+      const skillText = document.createElement('p');
+      skillText.className = 'collection-skill-text';
+      skillText.textContent = `${hero.skillName}：${hero.skillDescription}`;
+      skill.appendChild(skillIcon);
+      skill.appendChild(skillText);
+
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'collection-action';
+      if (teamSelection.includes(hero.id)) {
+        action.textContent = '移出隊伍';
+        action.disabled = false;
+        action.addEventListener('click', () => {
+          teamSelection = teamSelection.filter(id => id !== hero.id);
+          renderTeamSelection();
+          renderCollectionGrid();
+        });
+      } else if (teamSelection.length >= TEAM_SIZE) {
+        action.textContent = '隊伍已滿';
+        action.disabled = true;
+      } else {
+        action.textContent = '加入隊伍';
+        action.addEventListener('click', () => {
+          teamSelection.push(hero.id);
+          renderTeamSelection();
+          renderCollectionGrid();
+        });
+      }
+
+      card.appendChild(header);
+      if (hero.tagline) {
+        const tagline = document.createElement('p');
+        tagline.className = 'collection-tagline';
+        tagline.textContent = hero.tagline;
+        card.appendChild(tagline);
+      }
+      card.appendChild(portrait);
+      card.appendChild(elementBadge);
+      card.appendChild(attack);
+      card.appendChild(growth);
+      card.appendChild(skill);
+      card.appendChild(action);
+      collectionGrid.appendChild(card);
+    });
 }
 
 function applyTeamSelection() {
@@ -3107,12 +3493,48 @@ if (typeof mobileSidebarMedia.addEventListener === 'function') {
   mobileSidebarMedia.addListener(handleSidebarMediaChange);
 }
 
+if (collectionElementFilters) {
+  const elementButtons = Array.from(collectionElementFilters.querySelectorAll('.filter-chip'));
+  elementButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const value = button.dataset.element || 'all';
+      collectionFilters.element = value;
+      elementButtons.forEach(btn => btn.classList.toggle('active', btn === button));
+      renderCollectionGrid();
+    });
+  });
+}
+
+if (collectionRarityFilter) {
+  collectionRarityFilter.addEventListener('change', () => {
+    collectionFilters.rarity = collectionRarityFilter.value || 'all';
+    renderCollectionGrid();
+  });
+}
+
 applyTeamButton.addEventListener('click', applyTeamSelection);
 restartButton.addEventListener('click', () => {
   if (hasBattleStarted) {
+    hideOverlay();
     resetGame();
   }
 });
+
+if (overlayNextButton) {
+  overlayNextButton.addEventListener('click', () => {
+    const nextStageId = overlayNextButton.dataset.nextStageId;
+    if (!nextStageId) return;
+    hideOverlay();
+    selectStage(nextStageId);
+  });
+}
+
+if (overlayTeamButton) {
+  overlayTeamButton.addEventListener('click', () => {
+    hideOverlay();
+    openTeamBuilder({ mode: hasBattleStarted ? 'overlay' : 'initial' });
+  });
+}
 
 setActiveStage(selectedStageId);
 

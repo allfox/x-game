@@ -539,7 +539,7 @@ export const STORY_CAMPAIGN = [
     chapter: '序章',
     title: '星瀑裂痕',
     summary: '裂縫守望者固守星瀑坍塌的前線，若不擊潰它，整座浮空城都將被拖入虛空。',
-    recommendedAttack: 12000,
+    recommendedAttack: 15000,
     difficulty: 1,
     badges: ['護盾轉換', '倒數 3'],
     enemy: {
@@ -548,7 +548,7 @@ export const STORY_CAMPAIGN = [
       displayName: '裂縫守望者・格拉斯',
       title: '裂縫守望者',
       name: '格拉斯',
-      maxHp: 28000,
+      maxHp: 36000,
       attackMessage: '{enemyDisplay}釋放裂隙震盪，造成{damage}傷害！',
       victoryLog: '{enemyDisplay}倒下，裂痕的嗚鳴暫時沉寂。',
       victoryOverlay: '裂縫守望者崩解，星瀑的奔流重新回到軌道。',
@@ -562,7 +562,7 @@ export const STORY_CAMPAIGN = [
           threshold: 1,
           shieldElement: 'water',
           shieldReduction: 0.2,
-          attack: 2400,
+          attack: 2900,
           countdownMax: 3,
           announcement: '{enemyDisplay}召喚晶潮護盾，倒數啟動！'
         },
@@ -570,7 +570,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.5,
           shieldElement: 'light',
           shieldReduction: 0.3,
-          attack: 2800,
+          attack: 3400,
           countdownMax: 2,
           announcement: '{enemyDisplay}暴走，護盾轉為聖光脈衝！'
         }
@@ -588,7 +588,7 @@ export const STORY_CAMPAIGN = [
     chapter: '第二章',
     title: '驟雨浮堡',
     summary: '風后掌握雲海浮堡的核心，引導雷暴摧毀沿途的村落。',
-    recommendedAttack: 16000,
+    recommendedAttack: 29000,
     difficulty: 2,
     badges: ['雷暴加劇', '行動延緩'],
     enemy: {
@@ -597,7 +597,7 @@ export const STORY_CAMPAIGN = [
       displayName: '雷冠風后・奧芙拉',
       title: '雷冠風后',
       name: '奧芙拉',
-      maxHp: 34000,
+      maxHp: 44000,
       attackMessage: '{enemyDisplay}召來暴風雷鳴，造成{damage}傷害！',
       victoryLog: '{enemyDisplay}的雷冠碎裂，雲海航線再度穩定。',
       victoryOverlay: '驟雨浮堡墜落，大地重獲寧靜的雨聲。',
@@ -611,7 +611,7 @@ export const STORY_CAMPAIGN = [
           threshold: 1,
           shieldElement: 'water',
           shieldReduction: 0.25,
-          attack: 3000,
+          attack: 3600,
           countdownMax: 3,
           announcement: '{enemyDisplay}召喚雨幕，雷雲蓄勢待發！'
         },
@@ -619,7 +619,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.7,
           shieldElement: 'wood',
           shieldReduction: 0.35,
-          attack: 3400,
+          attack: 4200,
           countdownMax: 2,
           announcement: '風后將雷鳴編成旋舞，倒數加快！'
         },
@@ -627,7 +627,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.35,
           shieldElement: 'light',
           shieldReduction: 0.25,
-          attack: 3800,
+          attack: 4600,
           countdownMax: 2,
           announcement: '暴風核心暴走，雷霆席捲整片棋盤！'
         }
@@ -654,7 +654,7 @@ export const STORY_CAMPAIGN = [
       displayName: '星鑄巨偶・歐克塔',
       title: '星鑄巨偶',
       name: '歐克塔',
-      maxHp: 39000,
+      maxHp: 52000,
       attackMessage: '{enemyDisplay}釋放星核光束，造成{damage}傷害！',
       victoryLog: '{enemyDisplay}的核心熄滅，光塔殘骸終於沉寂。',
       victoryOverlay: '巨偶跪倒在瓦礫間，星光重新回到聖庭調和。',
@@ -668,7 +668,7 @@ export const STORY_CAMPAIGN = [
           threshold: 1,
           shieldElement: 'light',
           shieldReduction: 0.35,
-          attack: 3200,
+          attack: 3900,
           countdownMax: 3,
           announcement: '{enemyDisplay}展開星輝護甲，光束蓄能中。'
         },
@@ -676,7 +676,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.6,
           shieldElement: 'fire',
           shieldReduction: 0.4,
-          attack: 3600,
+          attack: 4400,
           countdownMax: 2,
           announcement: '巨偶核心過載，熔火裂縫四散！'
         },
@@ -684,7 +684,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.3,
           shieldElement: null,
           shieldReduction: 0.25,
-          attack: 4200,
+          attack: 5000,
           countdownMax: 2,
           announcement: '星核裸露，巨偶以全功率掃射戰場！'
         }
@@ -711,7 +711,7 @@ export const STORY_CAMPAIGN = [
       displayName: '淵歌女王・瑟菈薇',
       title: '淵歌女王',
       name: '瑟菈薇',
-      maxHp: 47000,
+      maxHp: 60000,
       attackMessage: '{enemyDisplay}以淵歌纏繞靈魂，造成{damage}傷害！',
       victoryLog: '{enemyDisplay}的歌聲沉寂，冥潮再度聽見海霧低語。',
       victoryOverlay: '女王沉入深海，遠征隊在淵底重燃希望。',
@@ -725,7 +725,7 @@ export const STORY_CAMPAIGN = [
           threshold: 1,
           shieldElement: 'dark',
           shieldReduction: 0.25,
-          attack: 3400,
+          attack: 4200,
           countdownMax: 3,
           announcement: '{enemyDisplay}低唱淵歌，毒潮開始蔓延。'
         },
@@ -733,7 +733,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.65,
           shieldElement: 'water',
           shieldReduction: 0.35,
-          attack: 3800,
+          attack: 4700,
           countdownMax: 2,
           announcement: '歌聲共鳴，倒數縮短，毒潮更加濃烈！'
         },
@@ -741,7 +741,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.3,
           shieldElement: 'dark',
           shieldReduction: 0.3,
-          attack: 4400,
+          attack: 5400,
           countdownMax: 1,
           announcement: '淵歌化為尖嘯，瑟菈薇決意把你拖入深淵！'
         }
@@ -759,8 +759,8 @@ export const STORY_CAMPAIGN = [
     chapter: '終章',
     title: '審判之環',
     summary: '虛空審判者坐鎮裂隙核心，企圖以審判脈網重寫所有元素法則。',
-    recommendedAttack: 28000,
-    difficulty: 5,
+    recommendedAttack: 36000,
+    difficulty: 6,
     badges: ['護盾輪替', '倒數 2→1'],
     enemy: {
       id: 'void-arbiter',
@@ -768,7 +768,7 @@ export const STORY_CAMPAIGN = [
       displayName: '虛空審判者',
       title: '審判者',
       name: '審判者',
-      maxHp: 54000,
+      maxHp: 72000,
       attackMessage: '{enemyDisplay}釋放黑暗制裁，造成{damage}傷害！',
       victoryLog: '{enemyDisplay}護盾瓦解，審判之環終於崩塌。',
       victoryOverlay: '你擊敗了虛空審判者，失落的聖城重新獲得光明。',
@@ -782,7 +782,7 @@ export const STORY_CAMPAIGN = [
           threshold: 1,
           shieldElement: 'fire',
           shieldReduction: 0.35,
-          attack: 3600,
+          attack: 4500,
           countdownMax: 2,
           announcement: '{enemyDisplay}展開熾焰護盾，審判開始！'
         },
@@ -790,7 +790,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.6,
           shieldElement: 'dark',
           shieldReduction: 0.45,
-          attack: 4000,
+          attack: 5200,
           countdownMax: 2,
           announcement: '{enemyDisplay}轉化為暗影相位，攻勢與護盾同時增強！'
         },
@@ -798,7 +798,7 @@ export const STORY_CAMPAIGN = [
           threshold: 0.3,
           shieldElement: 'light',
           shieldReduction: 0.2,
-          attack: 4600,
+          attack: 5800,
           countdownMax: 1,
           announcement: '審判者狂怒暴走，倒數加快，光壁鎧甲覆體！'
         }
